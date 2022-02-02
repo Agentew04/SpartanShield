@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Usb.Events;
 
 namespace SpartanShield
 {
@@ -21,9 +22,12 @@ namespace SpartanShield
     /// </summary>
     public partial class MainWindow : Window
     {
-        public string PORTABLEURL {get;}= "http://github.com/Agentew04";
+        public string PORTABLEURL { get; } = "http://github.com/Agentew04";
 
         private Dictionary<Type, Page> pageMap; //needed to not overflow memory
+        
+        public IUsbEventWatcher UsbEventWatcher { get; set; }
+        
 
         public MainWindow()
         {
@@ -33,12 +37,17 @@ namespace SpartanShield
             {
                 { typeof(LoginPage), new LoginPage(this) },
                 { typeof(RegisterPage), new RegisterPage(this) },
-                { typeof(MenuPage), new MenuPage()}
+                { typeof(MenuPage), new MenuPage(this)}
             };
 
 
             contentFrame.Navigate(new LoginPage(this));
+
+            UsbEventWatcher = new UsbEventWatcher();
+            UsbEventWatcher.UsbDeviceAdded += USBManager.Plugged;
+            UsbEventWatcher.UsbDeviceRemoved += USBManager.Unplugged;
         }
+
         public void Navigate(Type pageType)
         {
             if (pageMap.ContainsKey(pageType))

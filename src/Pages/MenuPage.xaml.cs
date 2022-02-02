@@ -22,9 +22,12 @@ namespace SpartanShield.Pages
     {
         public bool IsLocked { get; set; }
 
-        public MenuPage()
+        private readonly MainWindow main;
+
+        public MenuPage(MainWindow main)
         {
             InitializeComponent();
+            this.main = main;
         }
     }
 }
