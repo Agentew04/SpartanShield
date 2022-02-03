@@ -24,9 +24,8 @@ namespace SpartanShield
                 return; // it's not a usb flash drive
             }
 
-            // its a compatible usb drive
-            if (!CheckSpartanFile(usb)) CreateSpartanFile(usb); 
-
+            // its a compatible usb driv
+            SpartanFile spartanFile = SpartanFileExists(usb) ? ReadSpartanFile(usb) : CreateSpartanFile(usb);
 
 
 
@@ -37,7 +36,7 @@ namespace SpartanShield
             //not much we can do here, just delete entries on menu
         }
 
-        private static bool CheckSpartanFile(UsbDevice usb) => File.Exists($"{usb.MountedDirectoryPath}\\.spartan");
+        private static bool SpartanFileExists(UsbDevice usb) => File.Exists($"{usb.MountedDirectoryPath}\\.spartan");
 
         private static SpartanFile CreateSpartanFile(UsbDevice usb)
         {
@@ -92,9 +91,9 @@ namespace SpartanShield
             binaryWriter.Write(spartanFile.Paths.Count); // write list length
             foreach(string path in spartanFile.Paths) 
             {
-                binaryWriter.Write(path);
+                binaryWriter.Write(path); // write each path
             }
-            fileStream.SetLength(fileStream.Position);
+            fileStream.SetLength(fileStream.Position); // truncates file, in case there are fewer bytes
         }
     }
 }

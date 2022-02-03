@@ -4,9 +4,9 @@
              xmlns:local="clr-namespace:SpartanShield"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <SolidColorBrush x:Key="Secondary" Color="#9977ff"/>
-        <SolidColorBrush x:Key="Background" Color="#edf6f9"/>
-        <SolidColorBrush x:Key="Primary" Color="#6730ec" />
+        <SolidColorBrush x:Key="Secondary" Color="#D90429"/>
+        <SolidColorBrush x:Key="Background" Color="#EDF2F4"/>
+        <SolidColorBrush x:Key="Primary" Color="#EF233C" />
         <SolidColorBrush x:Key="Secure" Color="#00b200"/>
         <SolidColorBrush x:Key="Insecure" Color="#ff0000"/>
         <Style x:Key="TransparentStyle" TargetType="{x:Type Button}">
