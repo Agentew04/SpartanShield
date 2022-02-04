@@ -11,28 +11,34 @@ namespace SpartanShield
 {
     public static class Utils
     {
-        public static string AppFolder { get; private set; } = $"{Environment.CurrentDirectory}/config";
-        public static string UsersFile { get; private set; } = $"{AppFolder}/users.dat";
-
-        public static byte[] CreateKeyFromString(string input) => Convert.FromHexString(HashString(input));
-
-        public static string HashString(string str)
+        public enum HashSecurity
         {
-            int hashnum = 100_000; // the bigger this number, the harder is to bruteforce
+            Unsafe = 1,
+            Safe = 17,
+            Safer = 18,
+            Extreme = 20
+        }
+        public static string AppFolder { get; private set; } = $"{Environment.CurrentDirectory}/config";
+        public static string UsersFile { get; private set; } = $"{AppFolder}/users.json";
+
+        public static byte[] CreateKeyFromString(string input) => Convert.FromHexString(HashString(input,HashSecurity.Safe));
+
+        public static string HashString(string str, HashSecurity difficulty )
+        {
+            int hashnum = (int)Math.Pow(2, (double)difficulty); // the bigger this number, the harder is to bruteforce
+            SHA512 sha512 = SHA512.Create();
             for (int i = 0; i < hashnum; i++)
             {
-                str = RawHash(str);
+                str = RawHash(str, sha512);
             }
             return str;
         }
 
-        private static string RawHash(string s)
+        private static string RawHash(string s, HashAlgorithm hash)
         {
-            //sha512
-            SHA512 sha512 = SHA512.Create();
             byte[] bytes = System.Text.Encoding.UTF8.GetBytes(s);
-            byte[] hash = sha512.ComputeHash(bytes);
-            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            byte[] hashOutput = hash.ComputeHash(bytes);
+            return BitConverter.ToString(hashOutput).Replace("-", "").ToLower();
         }
 
 
@@ -103,7 +109,11 @@ namespace SpartanShield
             try
             {
                 if (File.Exists(UsersFile)) return true;
-                else File.Create(UsersFile).Close();
+                else 
+                {
+                    if(!Directory.Exists(AppFolder)) Directory.CreateDirectory(AppFolder);
+                    File.Create(UsersFile).Close();
+                }
                 return true;
             }
             catch (Exception)
@@ -111,37 +121,41 @@ namespace SpartanShield
                 return false;
             }
         }
-        private static bool WriteUsersFile(Dictionary<string,string> dict)
+        private async static Task<bool> WriteUsersFile(Dictionary<string,string> dict)
         {
             try
             {
                 if (!File.Exists(UsersFile)) CreateUsersFile();
                 var json = JsonConvert.SerializeObject(dict);
-                File.WriteAllText(UsersFile, json);
+                await File.WriteAllTextAsync(UsersFile, json);
                 return true;
             }catch (Exception)
             {
                 return false;
             }
         }
-        private static Dictionary<string,string> ReadUsersFile()
+        private async static Task<Dictionary<string,string>> ReadUsersFile()
         {
             if (!File.Exists(UsersFile)) CreateUsersFile();
-            var json = File.ReadAllText(UsersFile);
-            var dict = JsonConvert.DeserializeObject<Dictionary<string,string>>(json);
+            var json = File.ReadAllTextAsync(UsersFile);
+            var dict = JsonConvert.DeserializeObject<Dictionary<string,string>>(await json);
             return dict ?? new();
         }
-        public static string GetUserHash(string user)
+        public async static Task<string?> GetUserHash(string user)
         {
-            var dict = ReadUsersFile();
+            var dict = await ReadUsersFile();
+            if (!dict.ContainsKey(user) || string.IsNullOrWhiteSpace(dict[user]))
+            {
+                return null;
+            }
             return dict[user];
         }
-        public static void SetUserHash(string user, string hash)
+        public async static Task<bool> SetUserHash(string user, string hash)
         {
             if (!File.Exists(UsersFile)) CreateUsersFile();
-            var dict = ReadUsersFile();
+            var dict = await ReadUsersFile();
             dict[user] = hash;
-            WriteUsersFile(dict);
+            return await WriteUsersFile(dict);
 
         }
     }

@@ -29,20 +29,39 @@ namespace SpartanShield.Pages
             GC.Collect();
         }
 
-        private void LoginClicked(object sender, RoutedEventArgs e)
+        private async void LoginClicked(object sender, RoutedEventArgs e)
         {
+            ProgressBar.Visibility = Visibility.Visible;
             var username = UsernameTextBox.Text;
             var password = PasswordBox.Password;
 
-            var isSuccessful = UserControl.Login(username, password);
+            var isSuccessful = await UserControl.Login(username, password);
 
-            if (!isSuccessful)
+            switch (isSuccessful)
             {
-                //show error
-                return;
+                case UserControl.AuthResult.Success:
+                    main.Navigate(typeof(MenuPage));
+                    break;
+                case UserControl.AuthResult.UserNotExist:
+                    ErrorText.Text = "This user does not exist!";
+                    ErrorText.Visibility = Visibility.Visible;
+                    break;
+                case UserControl.AuthResult.WrongPassword:
+                    ErrorText.Text = "Wrong password!";
+                    ErrorText.Visibility = Visibility.Visible;
+                    break;
+                case UserControl.AuthResult.MissingInfo:
+                    ErrorText.Text = "Fill all fields!";
+                    ErrorText.Visibility = Visibility.Visible;
+                    break;
+                case UserControl.AuthResult.UnknownError:
+                    ErrorText.Text = "An unknown error has ocurred!";
+                    ErrorText.Visibility = Visibility.Visible;
+                    break;
+                default:
+                    break;
             }
-
-            main.Navigate(typeof(MenuPage));
+            ProgressBar.Visibility = Visibility.Collapsed;
         }
 
     }

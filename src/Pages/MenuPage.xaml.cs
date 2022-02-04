@@ -20,8 +20,6 @@ namespace SpartanShield.Pages
     /// </summary>
     public partial class MenuPage : Page
     {
-        public bool IsLocked { get; set; }
-
         private readonly MainWindow main;
 
         public MenuPage(MainWindow main)

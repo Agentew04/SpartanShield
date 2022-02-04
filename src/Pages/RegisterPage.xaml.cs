@@ -40,19 +40,51 @@ namespace SpartanShield.Pages
             GC.Collect();
         }
 
-        private void RegisterButtonClicked(object sender, RoutedEventArgs e)
+        private async void RegisterButtonClicked(object sender, RoutedEventArgs e)
         {
-            if (RepeatPasswordBox.Password != PasswordBox.Password)
+            ProgressBar.Visibility = Visibility.Visible;
+            var username = UsernameTextBox.Text;
+            var password = PasswordBox.Password;
+            var passwordAgain = RepeatPasswordBox.Password;
+
+            if(string.IsNullOrWhiteSpace(username)||
+                string.IsNullOrWhiteSpace(password)||
+                string.IsNullOrWhiteSpace(passwordAgain)) // does not check if a field is
+                                                          // empty or null
             {
-                //show error
+                ErrorText.Text = "Fill all fields!";
+                ErrorText.Visibility = Visibility.Visible;
+                ProgressBar.Visibility = Visibility.Collapsed;
                 return;
             }
-            var isSuccesful = UserControl.Register(UsernameTextBox.Text, PasswordBox.Password);
-            if (!isSuccesful)
+
+            var isSuccesful = await UserControl.Register(username, password, passwordAgain);
+
+            switch (isSuccesful)
             {
-                //show error
-                return;
+                case UserControl.AuthResult.Success:
+                    main.Navigate(typeof(MenuPage));
+                    break;
+                case UserControl.AuthResult.UserAlreadyExist:
+                    ErrorText.Text = "This user already exists!";
+                    ErrorText.Visibility = Visibility.Visible;
+                    break;
+                case UserControl.AuthResult.PasswordNotMatch:
+                    ErrorText.Text = "The two passwords doesn't match!";
+                    ErrorText.Visibility = Visibility.Visible;
+                    break;
+                case UserControl.AuthResult.MissingInfo:
+                    ErrorText.Text = "Fill all fields!";
+                    ErrorText.Visibility = Visibility.Visible;
+                    break;
+                case UserControl.AuthResult.UnknownError:
+                    ErrorText.Text = "An unknown error has ocurred!";
+                    ErrorText.Visibility = Visibility.Visible;
+                    break;
+                default:
+                    break;
             }
+            ProgressBar.Visibility = Visibility.Collapsed;
         }
 
 

@@ -20,9 +20,7 @@ namespace SpartanShield.Controls
     /// </summary>
     public partial class PrimaryButton : System.Windows.Controls.UserControl
     {
-#pragma warning disable CS8618 // O campo não anulável precisa conter um valor não nulo ao sair do construtor. Considere declará-lo como anulável.
         public PrimaryButton()
-#pragma warning restore CS8618 // O campo não anulável precisa conter um valor não nulo ao sair do construtor. Considere declará-lo como anulável.
         {
             InitializeComponent();
         }
@@ -39,7 +37,7 @@ namespace SpartanShield.Controls
         public static readonly DependencyProperty TextProperty =
             DependencyProperty.Register("Text", typeof(string), typeof(PrimaryButton), new PropertyMetadata(""));
 
-        public event RoutedEventHandler Click;
+        public event RoutedEventHandler? Click;
 
         void OnButtonClick(object sender, RoutedEventArgs e)
         {

@@ -24,8 +24,8 @@ namespace SpartanShield
     {
         public string PORTABLEURL { get; } = "http://github.com/Agentew04";
 
-        private Dictionary<Type, Page> pageMap; //needed to not overflow memory
-        
+        private readonly Dictionary<Type, Page> pageMap; //needed to not overflow memory
+        private SessionInfo SessionInfo { get; set; } = new();
         public IUsbEventWatcher UsbEventWatcher { get; set; }
         
 
@@ -41,7 +41,7 @@ namespace SpartanShield
             };
 
 
-            contentFrame.Navigate(new LoginPage(this));
+            Navigate(typeof(LoginPage));
 
             UsbEventWatcher = new UsbEventWatcher();
             UsbEventWatcher.UsbDeviceAdded += USBManager.Plugged;

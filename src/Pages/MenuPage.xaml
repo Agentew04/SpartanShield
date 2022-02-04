@@ -14,29 +14,28 @@
             <Setter Property="FontSize" Value="35" />
         </Style>
     </Page.Resources>
-    <Grid Background="{StaticResource Background}">
+    <Grid Background="{StaticResource Background}" TextElement.FontFamily="Rubik">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*" />
-            <ColumnDefinition Width="auto" />
             <ColumnDefinition Width="3*" />
         </Grid.ColumnDefinitions>
 
-        <Grid>
+        <Grid Background="{StaticResource Secondary}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TextBlock Text="Protected Folders" HorizontalAlignment="Center" 
-                       VerticalAlignment="Center" FontFamily="Roboto"
+                       VerticalAlignment="Center"
+                       Foreground="{StaticResource Background}"
                        FontSize="25" Margin="10"/>
-            <Separator Grid.Row="1" Margin="10"/>
-            <ListView x:Name="FoldersListView" Grid.Row="2" Margin="25,10">
+            <Separator Grid.Row="1" Margin="10" />
+            <ListView x:Name="FoldersListView" Grid.Row="2" Margin="25,10"
+                      Background="{StaticResource Background}">
 
             </ListView>
         </Grid>
-
-        <Rectangle Grid.Column="1" Fill="Gray" Width="1" Margin="0,10"/>
 
         <Grid Grid.Column="2" Margin="10">
             <Grid.RowDefinitions>

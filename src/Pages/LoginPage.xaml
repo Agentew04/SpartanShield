@@ -24,6 +24,9 @@
 
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                         Width="225">
+                <TextBlock x:Name="ErrorText" Visibility="Hidden"   
+                           d:Text="Wrong Password!" HorizontalAlignment="Center"
+                           Foreground="{StaticResource Secondary}"/>
                 <GroupBox Header="Username" Margin="0,10">
                     <TextBox Foreground="{StaticResource Secondary}"
                              d:Text="JohnDoe123" Margin="3,2"
@@ -37,6 +40,12 @@
 
                 <local:PrimaryButton Text="Login" HorizontalAlignment="Center"
                                      x:Name="LoginButton" Click="LoginClicked"/>
+                <ProgressBar HorizontalAlignment="Center" Margin="5"
+                             MinWidth="50" Visibility="Collapsed"
+                             IsIndeterminate="True"
+                             x:Name="ProgressBar"/>
+                
+                
                 <StackPanel Orientation="Horizontal" Margin="0,10"
                             HorizontalAlignment="Center">
                     <TextBlock Text="Don't have an account?"

@@ -3,7 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:SpartanShield.Pages"
+      xmlns:local="clr-namespace:SpartanShield.Controls"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="RegisterPage">
@@ -24,6 +24,9 @@
 
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
                         Width="225">
+                <TextBlock x:Name="ErrorText" Visibility="Hidden"   
+                           d:Text="Wrong Password!" HorizontalAlignment="Center"
+                           Foreground="{StaticResource Secondary}"/>
                 <GroupBox Header="Username" Margin="0,10">
                     <TextBox Foreground="{StaticResource Secondary}"
                              d:Text="JohnDoe123" Margin="3,2"
@@ -40,15 +43,14 @@
                              x:Name="RepeatPasswordBox"/>
                 </GroupBox>
 
-                <Border Background="{StaticResource Primary}" HorizontalAlignment="Center"
-                        CornerRadius="5" Padding="10,3" Margin="0,10,0,0">
-                    <Button x:Name="RegisterButton" 
-                            Content="Register" Background="{StaticResource Primary}"
-                            Foreground="{StaticResource Background}" FontWeight="Bold"
-                            BorderBrush="Transparent" Margin="2"
-                            Style="{StaticResource TransparentStyle}"
-                            Click="RegisterButtonClicked"/>
-                </Border>
+                <local:PrimaryButton HorizontalAlignment="Center" Margin="0,10,0,0"
+                                     x:Name="RegisterButton"
+                                     Click="RegisterButtonClicked"
+                                     Text="Register"/>
+                <ProgressBar HorizontalAlignment="Center" Margin="5"
+                             MinWidth="50" Visibility="Collapsed"
+                             IsIndeterminate="True"
+                             x:Name="ProgressBar"/>
 
                 <StackPanel Orientation="Horizontal" Margin="0,10"
                             HorizontalAlignment="Center">
