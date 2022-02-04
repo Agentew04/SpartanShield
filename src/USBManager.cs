@@ -10,12 +10,6 @@ namespace SpartanShield
 {
     public static class USBManager
     {
-        public class SpartanFile
-        {
-            public Guid Guid { get; set; }
-            public bool IsDecrypted { get; set; }
-            public List<string> Paths { get; set; } = new();
-        }
 
 #pragma warning disable IDE0060
         public static void Plugged(object? sender, UsbDevice usb)
@@ -36,6 +30,7 @@ namespace SpartanShield
         public static void Unplugged(object? sender, UsbDevice e)
         {
             //not much we can do here, just delete entries on menu
+
         }
 #pragma warning restore IDE0060
 
@@ -56,7 +51,7 @@ namespace SpartanShield
 
             return new()
             {
-                Guid = guid,
+                Id = guid,
                 IsDecrypted = true,
                 Paths = new()
             };
@@ -67,21 +62,7 @@ namespace SpartanShield
             string path = $"{usb.MountedDirectoryPath}\\.spartan";
             using FileStream fileStream = new(path, FileMode.Open);
             using BinaryReader binaryReader = new(fileStream);
-            Guid guid = new(binaryReader.ReadBytes(16));
-            bool isdecrypted = binaryReader.ReadBoolean();
-            int listLength = binaryReader.ReadInt32();
-            List<string> paths = new();
-            for (int i = 0; i < listLength; i++)
-            {
-                paths.Add(binaryReader.ReadString());
-            }
-            
-            return new()
-            {
-                Guid = guid,
-                IsDecrypted = isdecrypted,
-                Paths = paths
-            };
+            return SpartanFile.Read(binaryReader);
         }
     
         private static void WriteSpartanFile(UsbDevice usb, SpartanFile spartanFile)
@@ -89,14 +70,42 @@ namespace SpartanShield
             string filepath = $"{usb.MountedDirectoryPath}\\.spartan";
             using FileStream fileStream = new(filepath, FileMode.Open);
             using BinaryWriter binaryWriter = new(fileStream);
-            binaryWriter.Seek(16, SeekOrigin.Begin); // jumps the guid part, should not be edited once defined
-            binaryWriter.Write(spartanFile.IsDecrypted); // overrides the old isDecrypted bool
-            binaryWriter.Write(spartanFile.Paths.Count); // write list length
-            foreach(string path in spartanFile.Paths) 
-            {
-                binaryWriter.Write(path); // write each path
-            }
+            SpartanFile.Write(binaryWriter, spartanFile, true);
             fileStream.SetLength(fileStream.Position); // truncates file, in case there are fewer bytes
+        }
+        public class SpartanFile
+        {
+            public Guid Id { get; set; }
+            public bool IsDecrypted { get; set; }
+            public List<string> Paths { get; set; } = new();
+            
+            public static void Write(BinaryWriter writer, SpartanFile item, bool skipGuid = false)
+            {
+                if (!skipGuid) writer.Write(item.Id.ToByteArray()); // id
+                else writer.Seek(16, SeekOrigin.Begin);
+                writer.Write(item.IsDecrypted); // overrides the old isDecrypted bool
+                writer.Write(item.Paths.Count); // write list length
+                foreach (string path in item.Paths)
+                {
+                    writer.Write(path); // write each path
+                }
+            }
+            public static SpartanFile Read(BinaryReader reader){
+                Guid id = new Guid(reader.ReadBytes(16));
+                bool isDecrypted = reader.ReadBoolean();
+                var listcount = reader.ReadInt32();
+                List<string> paths = new();
+                for (int i = 0; i < listcount; i++)
+                {
+                    paths.Add(reader.ReadString());
+                }
+                return new()
+                {
+                    Id = id,
+                    IsDecrypted = isDecrypted,
+                    Paths = paths
+                };
+            }
         }
     }
 }

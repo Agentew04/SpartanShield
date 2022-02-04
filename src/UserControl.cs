@@ -35,8 +35,8 @@ namespace SpartanShield
 
             if (await Utils.SetUserHash(username, passwordHash))
             {
-                MainWindow.SessionInfo.IsLoggedIn = true;
-                MainWindow.SessionInfo.CurrentUsername = username;
+                SessionInfo.IsLoggedIn = true;
+                SessionInfo.CurrentUsername = username;
                 return AuthResult.Success;
             }
             else return AuthResult.UnknownError;
@@ -59,8 +59,8 @@ namespace SpartanShield
                 return AuthResult.WrongPassword;
             else
             {
-                MainWindow.SessionInfo.IsLoggedIn = true;
-                MainWindow.SessionInfo.CurrentUsername = username;
+                SessionInfo.IsLoggedIn = true;
+                SessionInfo.CurrentUsername = username;
                 return AuthResult.Success; 
             } 
         }

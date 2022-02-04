@@ -20,6 +20,7 @@ namespace SpartanShield
         }
         public static string AppFolder { get; private set; } = $"{Environment.CurrentDirectory}/config";
         public static string UsersFile { get; private set; } = $"{AppFolder}/users.json";
+        public static string ItemsFile { get; private set; } = $"{AppFolder}/items.dat";
 
         public static byte[] CreateKeyFromString(string input) => Convert.FromHexString(HashString(input,HashSecurity.Safe));
 

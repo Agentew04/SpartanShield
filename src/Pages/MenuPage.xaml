@@ -25,6 +25,7 @@
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
             </Grid.RowDefinitions>
             <TextBlock Text="Protected Folders" HorizontalAlignment="Center" 
                        VerticalAlignment="Center"
@@ -35,6 +36,15 @@
                       Background="{StaticResource Background}">
 
             </ListView>
+            <Grid Grid.Row="3" Margin="25,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Margin="1" x:Name="DirectoryTextBox"/>
+                <Button Content="..." Width="25" Grid.Column="1" Margin="1"
+                        x:Name="DirectoryButton" Click="FindDirectoryOrFile"/>
+            </Grid>
         </Grid>
 
         <Grid Grid.Column="2" Margin="10">

@@ -25,7 +25,6 @@ namespace SpartanShield
         public string PORTABLEURL { get; } = "http://github.com/Agentew04";
 
         private readonly Dictionary<Type, Page> pageMap; //needed to not overflow memory with infinite pages
-        public static SessionInfo SessionInfo { get; set; } = new();
         public IUsbEventWatcher UsbEventWatcher { get; set; } = new UsbEventWatcher();
         public List<CryptoItem> Items { get; set; } = new();
         

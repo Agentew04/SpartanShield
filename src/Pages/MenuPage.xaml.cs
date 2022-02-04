@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -26,6 +27,16 @@ namespace SpartanShield.Pages
         {
             InitializeComponent();
             this.main = main;
+        }
+
+        private void FindDirectoryOrFile(object sender, RoutedEventArgs e)
+        {
+            using var opdiag = new FolderBrowserDialog();
+            var result = opdiag.ShowDialog();
+            if(result == DialogResult.OK)
+            {
+                DirectoryTextBox.Text = opdiag.SelectedPath;
+            }
         }
     }
 }
