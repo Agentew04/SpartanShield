@@ -33,7 +33,12 @@ namespace SpartanShield
 
             var passwordHash = Utils.HashString($"{password}{username}", Utils.HashSecurity.Safer);
 
-            if (await Utils.SetUserHash(username, passwordHash)) return AuthResult.Success;
+            if (await Utils.SetUserHash(username, passwordHash))
+            {
+                MainWindow.SessionInfo.IsLoggedIn = true;
+                MainWindow.SessionInfo.CurrentUsername = username;
+                return AuthResult.Success;
+            }
             else return AuthResult.UnknownError;
         }
 
@@ -50,10 +55,14 @@ namespace SpartanShield
 
             string passwordHash = Utils.HashString($"{password}{username}", Utils.HashSecurity.Safer);
 
-            if (passwordHash.Equals(storedHash)) 
-                return AuthResult.Success; 
-            else 
+            if (!passwordHash.Equals(storedHash)) 
                 return AuthResult.WrongPassword;
+            else
+            {
+                MainWindow.SessionInfo.IsLoggedIn = true;
+                MainWindow.SessionInfo.CurrentUsername = username;
+                return AuthResult.Success; 
+            } 
         }
     }
 }

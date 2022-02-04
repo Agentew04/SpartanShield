@@ -17,6 +17,7 @@ namespace SpartanShield
             public List<string> Paths { get; set; } = new();
         }
 
+#pragma warning disable IDE0060
         public static void Plugged(object? sender, UsbDevice usb)
         {
             if(usb.MountedDirectoryPath == "")
@@ -27,7 +28,8 @@ namespace SpartanShield
             // its a compatible usb driv
             SpartanFile spartanFile = SpartanFileExists(usb) ? ReadSpartanFile(usb) : CreateSpartanFile(usb);
 
-
+            // add usb drive contents to the main list
+            // TODO
 
         }
 
@@ -35,6 +37,7 @@ namespace SpartanShield
         {
             //not much we can do here, just delete entries on menu
         }
+#pragma warning restore IDE0060
 
         private static bool SpartanFileExists(UsbDevice usb) => File.Exists($"{usb.MountedDirectoryPath}\\.spartan");
 

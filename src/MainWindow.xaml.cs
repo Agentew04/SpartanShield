@@ -24,9 +24,10 @@ namespace SpartanShield
     {
         public string PORTABLEURL { get; } = "http://github.com/Agentew04";
 
-        private readonly Dictionary<Type, Page> pageMap; //needed to not overflow memory
-        private SessionInfo SessionInfo { get; set; } = new();
-        public IUsbEventWatcher UsbEventWatcher { get; set; }
+        private readonly Dictionary<Type, Page> pageMap; //needed to not overflow memory with infinite pages
+        public static SessionInfo SessionInfo { get; set; } = new();
+        public IUsbEventWatcher UsbEventWatcher { get; set; } = new UsbEventWatcher();
+        public List<CryptoItem> Items { get; set; } = new();
         
 
         public MainWindow()
@@ -40,10 +41,8 @@ namespace SpartanShield
                 { typeof(MenuPage), new MenuPage(this)}
             };
 
-
             Navigate(typeof(LoginPage));
 
-            UsbEventWatcher = new UsbEventWatcher();
             UsbEventWatcher.UsbDeviceAdded += USBManager.Plugged;
             UsbEventWatcher.UsbDeviceRemoved += USBManager.Unplugged;
         }
@@ -55,5 +54,7 @@ namespace SpartanShield
                 contentFrame.Navigate(pageMap[pageType]);
             }
         }
+
+
     }
 }

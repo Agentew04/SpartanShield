@@ -8,7 +8,15 @@ namespace SpartanShield
 {
     public class CryptoItem
     {
+        public string Name { get; set; } = string.Empty;
+
+        public Guid Id { get; set; }
+
         public string Path { get; set; } = string.Empty;
+
+        public bool IsDirectory { get; set; }
+
+        public bool IsEncrypted { get; set; }
 
     }
 }
