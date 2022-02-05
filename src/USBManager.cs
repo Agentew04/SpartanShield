@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Usb.Events;
 
 namespace SpartanShield
@@ -14,7 +11,7 @@ namespace SpartanShield
 #pragma warning disable IDE0060
         public static void Plugged(object? sender, UsbDevice usb)
         {
-            if(usb.MountedDirectoryPath == "")
+            if (usb.MountedDirectoryPath == "")
             {
                 return; // it's not a usb flash drive
             }
@@ -45,9 +42,9 @@ namespace SpartanShield
             binaryWriter.Write(guid.ToByteArray()); // id
             binaryWriter.Write(true); // its decrypted
             binaryWriter.Write(0); // the length of the string list
-            // list is empty, don't write anything
-            
-            File.SetAttributes(path,FileAttributes.Hidden);
+                                   // list is empty, don't write anything
+
+            File.SetAttributes(path, FileAttributes.Hidden);
 
             return new()
             {
@@ -56,7 +53,7 @@ namespace SpartanShield
                 Paths = new()
             };
         }
-    
+
         private static SpartanFile ReadSpartanFile(UsbDevice usb)
         {
             string path = $"{usb.MountedDirectoryPath}\\.spartan";
@@ -64,7 +61,7 @@ namespace SpartanShield
             using BinaryReader binaryReader = new(fileStream);
             return SpartanFile.Read(binaryReader);
         }
-    
+
         private static void WriteSpartanFile(UsbDevice usb, SpartanFile spartanFile)
         {
             string filepath = $"{usb.MountedDirectoryPath}\\.spartan";
@@ -78,7 +75,7 @@ namespace SpartanShield
             public Guid Id { get; set; }
             public bool IsDecrypted { get; set; }
             public List<string> Paths { get; set; } = new();
-            
+
             public static void Write(BinaryWriter writer, SpartanFile item, bool skipGuid = false)
             {
                 if (!skipGuid) writer.Write(item.Id.ToByteArray()); // id
@@ -90,7 +87,8 @@ namespace SpartanShield
                     writer.Write(path); // write each path
                 }
             }
-            public static SpartanFile Read(BinaryReader reader){
+            public static SpartanFile Read(BinaryReader reader)
+            {
                 Guid id = new Guid(reader.ReadBytes(16));
                 bool isDecrypted = reader.ReadBoolean();
                 var listcount = reader.ReadInt32();

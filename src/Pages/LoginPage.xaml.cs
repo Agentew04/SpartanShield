@@ -16,7 +16,7 @@ namespace SpartanShield.Pages
             InitializeComponent();
             this.main = main;
         }
-        
+
         private void GetPortableClicked(object sender, RoutedEventArgs e)
         {
             //Process.Start(new ProcessStartInfo(PORTABLEURL));

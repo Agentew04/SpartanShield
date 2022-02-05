@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SpartanShield
 {
@@ -18,7 +14,7 @@ namespace SpartanShield
         public bool IsDirectory { get; set; }
 
         public bool IsEncrypted { get; set; }
-        
+
         public bool IsInRemovableDrive { get; set; }
 
         public Guid OwnerId { get; set; }

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,9 +21,9 @@ namespace SpartanShield
         public static string UsersFile { get; private set; } = $"{AppFolder}/users.json";
         public static string ItemsFile { get; private set; } = $"{AppFolder}/items.dat";
 
-        public static byte[] CreateKeyFromString(string input) => Convert.FromHexString(HashString(input,HashSecurity.Safe));
+        public static byte[] CreateKeyFromString(string input) => Convert.FromHexString(HashString(input, HashSecurity.Safe));
 
-        public static string HashString(string str, HashSecurity difficulty )
+        public static string HashString(string str, HashSecurity difficulty)
         {
             int hashnum = (int)Math.Pow(2, (double)difficulty); // the bigger this number, the harder is to bruteforce
             SHA512 sha512 = SHA512.Create();
@@ -37,7 +36,7 @@ namespace SpartanShield
 
         private static string RawHash(string s, HashAlgorithm hash)
         {
-            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(s);
+            byte[] bytes = Encoding.UTF8.GetBytes(s);
             byte[] hashOutput = hash.ComputeHash(bytes);
             return BitConverter.ToString(hashOutput).Replace("-", "").ToLower();
         }
@@ -110,9 +109,9 @@ namespace SpartanShield
             try
             {
                 if (File.Exists(UsersFile)) return true;
-                else 
+                else
                 {
-                    if(!Directory.Exists(AppFolder)) Directory.CreateDirectory(AppFolder);
+                    if (!Directory.Exists(AppFolder)) Directory.CreateDirectory(AppFolder);
                     File.Create(UsersFile).Close();
                 }
                 return true;
@@ -122,7 +121,7 @@ namespace SpartanShield
                 return false;
             }
         }
-        private async static Task<bool> WriteUsersFile(Dictionary<string,string> dict)
+        private async static Task<bool> WriteUsersFile(Dictionary<string, string> dict)
         {
             try
             {
@@ -130,16 +129,17 @@ namespace SpartanShield
                 var json = JsonConvert.SerializeObject(dict);
                 await File.WriteAllTextAsync(UsersFile, json);
                 return true;
-            }catch (Exception)
+            }
+            catch (Exception)
             {
                 return false;
             }
         }
-        private async static Task<Dictionary<string,string>> ReadUsersFile()
+        private async static Task<Dictionary<string, string>> ReadUsersFile()
         {
             if (!File.Exists(UsersFile)) CreateUsersFile();
             var json = File.ReadAllTextAsync(UsersFile);
-            var dict = JsonConvert.DeserializeObject<Dictionary<string,string>>(await json);
+            var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(await json);
             return dict ?? new();
         }
         public async static Task<string?> GetUserHash(string user)

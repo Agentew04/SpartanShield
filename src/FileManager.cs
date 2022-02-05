@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SpartanShield
 {
@@ -47,33 +44,19 @@ namespace SpartanShield
         public static void AddItem(CryptoItem item)
         {
             var alreadyExists = GetItems().Any(x => x.Id == item.Id);
+            var currentCount = GetItems().Count;
             if (alreadyExists)
             {
-                var conflictantItem= GetItems().Where(x => x.Id == item.Id).First();
-                ConflictProp conflicts=null;
-                if (conflictantItem.Name != item.Name) // name conflict
-                {
-                    conflicts &= ConflictProp.Name;
-                }
-                if(conflictantItem.Path != item.Path)
-                {
-                    
-                }
+                // TODO RESOLVE CONFLICTS
                 return;
             }
+            CheckFile();
+            using var fs = File.OpenRead(Utils.ItemsFile);
+            using BinaryWriter binaryWriter = new(fs);
+            binaryWriter.Write(currentCount + 1);
+            binaryWriter.Seek(0, SeekOrigin.End);
+            CryptoItem.WriteItem(binaryWriter, item);
 
-        }
-
-        [Flags]
-        private enum ConflictProp
-        {
-            
-            Name = 1,
-            IsDirectory =2,
-            IsEncrypted = 4,
-            IsInRemovableDrive = 8,
-            OwnerId = 16,
-            Path=32
         }
     }
 }

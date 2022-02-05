@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace SpartanShield
 {
@@ -28,7 +24,7 @@ namespace SpartanShield
                 || string.IsNullOrWhiteSpace(passwordAgain))
                 return AuthResult.MissingInfo;
 
-            if (await Utils.GetUserHash(username) != null) 
+            if (await Utils.GetUserHash(username) != null)
                 return AuthResult.UserAlreadyExist;
 
             var passwordHash = Utils.HashString($"{password}{username}", Utils.HashSecurity.Safer);
@@ -50,19 +46,19 @@ namespace SpartanShield
 
             string? storedHash = await Utils.GetUserHash(username);
 
-            if(storedHash == null)
+            if (storedHash == null)
                 return AuthResult.UserNotExist;
 
             string passwordHash = Utils.HashString($"{password}{username}", Utils.HashSecurity.Safer);
 
-            if (!passwordHash.Equals(storedHash)) 
+            if (!passwordHash.Equals(storedHash))
                 return AuthResult.WrongPassword;
             else
             {
                 SessionInfo.IsLoggedIn = true;
                 SessionInfo.CurrentUsername = username;
-                return AuthResult.Success; 
-            } 
+                return AuthResult.Success;
+            }
         }
     }
 }
