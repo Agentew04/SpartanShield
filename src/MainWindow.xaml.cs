@@ -16,8 +16,6 @@ namespace SpartanShield
 
         private readonly Dictionary<Type, Page> pageMap; //needed to not overflow memory with infinite pages
         public IUsbEventWatcher UsbEventWatcher { get; set; } = new UsbEventWatcher();
-        public List<CryptoItem> Items { get; set; } = new();
-
 
         public MainWindow()
         {
@@ -27,7 +25,8 @@ namespace SpartanShield
             {
                 { typeof(LoginPage), new LoginPage(this) },
                 { typeof(RegisterPage), new RegisterPage(this) },
-                { typeof(MenuPage), new MenuPage(this) }
+                { typeof(MenuPage), new MenuPage(this) },
+                { typeof(FoldersPage), new FoldersPage(this) }
             };
 
             Navigate(typeof(LoginPage));

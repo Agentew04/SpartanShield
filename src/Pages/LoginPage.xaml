@@ -8,16 +8,21 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Login">
 
-    <Grid>
+    <Grid TextElement.FontFamily="Rubik">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="3*" />
             <ColumnDefinition Width="5*" />
         </Grid.ColumnDefinitions>
         
+        
         <Border Background="{StaticResource Secondary}">
-            <Image HorizontalAlignment="Center"
-                   VerticalAlignment="Center" Source="/Assets/spartan.png"
+            <WrapPanel Orientation="Vertical" HorizontalAlignment="Center"
+                       VerticalAlignment="Center">
+                <TextBlock Text="SpartanShield" Style="{StaticResource WhiteTitle}"
+                           HorizontalAlignment="Center" Margin="25"/>
+                <Image Source="/Assets/spartan.png"
                    MaxWidth="200" MaxHeight="200"/>
+            </WrapPanel>
         </Border>
 
         <Grid Grid.Column="1" Background="{StaticResource Background}">

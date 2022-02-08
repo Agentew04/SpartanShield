@@ -20,5 +20,12 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="WhiteTitle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Background}"/>
+            <Setter Property="FontFamily" Value="Rubik" />
+            <Setter Property="FontSize" Value="35" />
+            <Setter Property="FontWeight" Value="Bold" />
+            
+        </Style>
     </Application.Resources>
 </Application>

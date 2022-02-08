@@ -1,6 +1,10 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace SpartanShield.Pages
 {
@@ -17,14 +21,23 @@ namespace SpartanShield.Pages
             this.main = main;
         }
 
-        private void FindDirectoryOrFile(object sender, RoutedEventArgs e)
+        private void RequestFoldersPage(object sender, RoutedEventArgs e) => main.Navigate(typeof(FoldersPage));
+
+        private void ToggleLockClick(object sender, RoutedEventArgs e)
         {
-            using var opdiag = new FolderBrowserDialog();
-            var result = opdiag.ShowDialog();
-            if (result == DialogResult.OK)
+            var key = Utils.CreateKeyFromString("123", "Agentew04");
+            var iv = Utils.CreateIV();
+            CryptoItem cryptoItem = new()
             {
-                DirectoryTextBox.Text = opdiag.SelectedPath;
-            }
+                Id = Guid.NewGuid(),
+                IsDirectory = true,
+                IsEncrypted = false,
+                IsInRemovableDrive = false,
+                Name = "Teste",
+                OwnerId = Guid.Empty,
+                Path = @"E:\teste"
+            };
+            EncryptionManager.EncryptItem(new(key,iv), cryptoItem);
         }
     }
 }

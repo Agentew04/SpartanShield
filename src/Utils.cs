@@ -19,9 +19,26 @@ namespace SpartanShield
         }
         public static string AppFolder { get; private set; } = $"{Environment.CurrentDirectory}/config";
         public static string UsersFile { get; private set; } = $"{AppFolder}/users.json";
-        public static string ItemsFile { get; private set; } = $"{AppFolder}/items.dat";
+        public static string ItemsFile { get; private set; } = $"{AppFolder}/items.json";
 
-        public static byte[] CreateKeyFromString(string input) => Convert.FromHexString(HashString(input, HashSecurity.Safe));
+        public static byte[] CreateKeyFromString(string input, string? salt = null)
+        {
+            //get input bytes
+            byte[] inputbytes = Encoding.UTF8.GetBytes(input);
+            byte[] saltbytes;
+            if (salt != null) saltbytes = Encoding.UTF8.GetBytes(salt);
+            else saltbytes = new byte[16];
+
+            // Generate the hash
+            Rfc2898DeriveBytes pbkdf2 = new(inputbytes, saltbytes, iterations: 5000, HashAlgorithmName.SHA512);
+            return pbkdf2.GetBytes(32); //32 bytes length is 256 bits
+        }
+
+        public static byte[] CreateIV()
+        {
+            using Aes aes = Aes.Create();
+            return aes.IV;
+        }
 
         public static string HashString(string str, HashSecurity difficulty)
         {
@@ -45,7 +62,7 @@ namespace SpartanShield
         public record Auth(byte[] Key, byte[] IV);
 
         /// <summary>
-        /// Encrypts a Stream using AES. Key and Block size is 2048 for safety.
+        /// Encrypts a Stream using AES. Keysize is 256bit and IV is 128bit
         /// </summary>
         /// <param name="inStream">The stream that will be encrypted</param>
         /// <param name="auth">The Auth object</param>
@@ -55,11 +72,9 @@ namespace SpartanShield
             using Aes aes = Aes.Create();
             aes.Key = auth.Key ?? aes.Key;
             aes.IV = auth.IV ?? aes.IV;
-            aes.KeySize = 2048;
-            aes.BlockSize = 2048;
             aes.Padding = PaddingMode.PKCS7;
             ICryptoTransform encryptor = aes.CreateEncryptor();
-            using MemoryStream memoryStream = new();
+            MemoryStream memoryStream = new();
             using CryptoStream cryptoStream = new(memoryStream, encryptor, CryptoStreamMode.Write);
             using StreamWriter swEncrypt = new(cryptoStream);
             swEncrypt.Write(inStream);
@@ -104,60 +119,6 @@ namespace SpartanShield
 
         }
 
-        private static bool CreateUsersFile()
-        {
-            try
-            {
-                if (File.Exists(UsersFile)) return true;
-                else
-                {
-                    if (!Directory.Exists(AppFolder)) Directory.CreateDirectory(AppFolder);
-                    File.Create(UsersFile).Close();
-                }
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-        private async static Task<bool> WriteUsersFile(Dictionary<string, string> dict)
-        {
-            try
-            {
-                if (!File.Exists(UsersFile)) CreateUsersFile();
-                var json = JsonConvert.SerializeObject(dict);
-                await File.WriteAllTextAsync(UsersFile, json);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-        private async static Task<Dictionary<string, string>> ReadUsersFile()
-        {
-            if (!File.Exists(UsersFile)) CreateUsersFile();
-            var json = File.ReadAllTextAsync(UsersFile);
-            var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(await json);
-            return dict ?? new();
-        }
-        public async static Task<string?> GetUserHash(string user)
-        {
-            var dict = await ReadUsersFile();
-            if (!dict.ContainsKey(user) || string.IsNullOrWhiteSpace(dict[user]))
-            {
-                return null;
-            }
-            return dict[user];
-        }
-        public async static Task<bool> SetUserHash(string user, string hash)
-        {
-            if (!File.Exists(UsersFile)) CreateUsersFile();
-            var dict = await ReadUsersFile();
-            dict[user] = hash;
-            return await WriteUsersFile(dict);
-
-        }
+        
     }
 }

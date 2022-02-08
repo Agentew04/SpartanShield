@@ -24,12 +24,12 @@ namespace SpartanShield
                 || string.IsNullOrWhiteSpace(passwordAgain))
                 return AuthResult.MissingInfo;
 
-            if (await Utils.GetUserHash(username) != null)
+            if (await FileManager.GetUserHashAsync(username) != null)
                 return AuthResult.UserAlreadyExist;
 
             var passwordHash = Utils.HashString($"{password}{username}", Utils.HashSecurity.Safer);
 
-            if (await Utils.SetUserHash(username, passwordHash))
+            if (await FileManager.SetUserHashAsync(username, passwordHash))
             {
                 SessionInfo.IsLoggedIn = true;
                 SessionInfo.CurrentUsername = username;
@@ -44,7 +44,7 @@ namespace SpartanShield
                 || string.IsNullOrWhiteSpace(password))
                 return AuthResult.MissingInfo;
 
-            string? storedHash = await Utils.GetUserHash(username);
+            string? storedHash = await FileManager.GetUserHashAsync(username);
 
             if (storedHash == null)
                 return AuthResult.UserNotExist;

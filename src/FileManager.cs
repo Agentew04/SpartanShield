@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SpartanShield
 {
@@ -8,14 +11,48 @@ namespace SpartanShield
     {
         private static void CheckFile()
         {
+            string[] paths = new[]
+            {
+                Utils.UsersFile,
+                Utils.ItemsFile
+            };
             if (!Directory.Exists(Utils.AppFolder))
             {
                 Directory.CreateDirectory(Utils.AppFolder);
             }
-            if (!File.Exists(Utils.UsersFile))
+            foreach (string path in paths)
             {
-                File.Create(Utils.UsersFile).Close();
+                if (!File.Exists(path))
+                {
+                    File.Create(path).Close();
+                }
             }
+        }
+
+        #region itemsfile
+
+
+        /// <summary>
+        ///  Read the contents of the file
+        /// </summary>
+        /// <returns></returns>
+        private static List<CryptoItem> ReadItemsFile()
+        {
+            CheckFile();
+            var json = File.ReadAllText(Utils.ItemsFile);
+            var itens = JsonConvert.DeserializeObject<List<CryptoItem>>(json);
+            return itens ?? new();
+        }
+        
+        /// <summary>
+        /// Writes the list to the ItemsFile
+        /// </summary>
+        /// <param name="items"></param>
+        private static void WriteItemsFile(List<CryptoItem> items)
+        {
+            CheckFile();
+            var json = JsonConvert.SerializeObject(items);
+            File.WriteAllText(Utils.ItemsFile, json);
         }
 
         /// <summary>
@@ -24,39 +61,143 @@ namespace SpartanShield
         /// <returns></returns>
         public static List<CryptoItem> GetItems()
         {
-            CheckFile();
-            using var fs = File.OpenRead(Utils.ItemsFile);
-            using BinaryReader binaryReader = new(fs);
-            var items = new List<CryptoItem>();
-            var count = binaryReader.ReadInt32();
-
-            for (int i = 0; i < count; i++)
-            {
-                items.Add(CryptoItem.ReadItem(binaryReader));
-            }
-            return items;
+            return ReadItemsFile();
         }
 
         /// <summary>
-        /// Adds a CryptoItem to the current app list
+        /// Adds a CryptoItem to the current persistent storage
         /// </summary>
         /// <param name="item"></param>
         public static void AddItem(CryptoItem item)
         {
-            var alreadyExists = GetItems().Any(x => x.Id == item.Id);
-            var currentCount = GetItems().Count;
-            if (alreadyExists)
+            var list = GetItems();
+            var exists = list.Any(x => x.Id == item.Id);
+            if (exists) list[list.FindIndex(x => x.Id == item.Id)] = item; 
+            else list.Add(item);
+            WriteItemsFile(list);
+            RaiseItemsChanged(new()
             {
-                // TODO RESOLVE CONFLICTS
-                return;
+                HasBeenAdded = true
+            });
+        }
+
+        /// <summary>
+        /// Adds many items to the persistent storage
+        /// </summary>
+        /// <param name="items">The items to be added</param>
+        public static void AddItem(IEnumerable<CryptoItem> items)
+        {
+            var list = GetItems();
+            foreach (var item in items)
+            {
+                var exists = list.Any(x => x.Id == item.Id);
+                if (exists) list[list.FindIndex(x => x.Id == item.Id)] = item;
+                else list.Add(item);
             }
+            WriteItemsFile(list);
+            RaiseItemsChanged(new()
+            {
+                HasBeenAdded = true
+            });
+        }
+
+        /// <summary>
+        /// Removes a CryptoItem from the persistent storage with the specificed Id
+        /// </summary>
+        /// <param name="id">The Id that will be removed</param>
+        /// <returns>A bool representing if the item was removed or not</returns>
+        public static bool RemoveItem(Guid id)
+        {
+            var list = GetItems();
+            var removed = list.RemoveAll(x=> x.Id == id) != 0;
+            WriteItemsFile(list);
+            RaiseItemsChanged(new()
+            {
+                HasBeenRemoved = true
+            });
+            return removed;
+        }
+
+        /// <summary>
+        /// Removes many items from persistent storage based on their ids
+        /// </summary>
+        /// <param name="ids">The ids that will be removed</param>
+        /// <returns>How many items were removed</returns>
+        public static int RemoveItem(IEnumerable<Guid> ids)
+        {
+            var list = GetItems();
+            var removed = list.RemoveAll(x => ids.Contains(x.Id));
+            RaiseItemsChanged(new()
+            {
+                HasBeenRemoved = true
+            });
+            return removed;
+        }
+
+        #endregion itemsfile
+
+        #region userfile
+        private async static Task<bool> WriteUsersFileAsync(Dictionary<string, string> dict)
+        {
+            try
+            {
+                CheckFile();
+                var json = JsonConvert.SerializeObject(dict);
+                await File.WriteAllTextAsync(Utils.UsersFile, json);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+        private async static Task<Dictionary<string, string>> ReadUsersFileAsync()
+        {
             CheckFile();
-            using var fs = File.OpenRead(Utils.ItemsFile);
-            using BinaryWriter binaryWriter = new(fs);
-            binaryWriter.Write(currentCount + 1);
-            binaryWriter.Seek(0, SeekOrigin.End);
-            CryptoItem.WriteItem(binaryWriter, item);
+            var json = File.ReadAllTextAsync(Utils.UsersFile);
+            var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(await json);
+            return dict ?? new();
+        }
+        public async static Task<string?> GetUserHashAsync(string user)
+        {
+            var dict = await ReadUsersFileAsync();
+            if (!dict.ContainsKey(user) || string.IsNullOrWhiteSpace(dict[user]))
+            {
+                return null;
+            }
+            return dict[user];
+        }
+        public async static Task<bool> SetUserHashAsync(string user, string hash)
+        {
+            CheckFile();
+            var dict = await ReadUsersFileAsync();
+            dict[user] = hash;
+            return await WriteUsersFileAsync(dict);
 
         }
+
+        #endregion userfile
+
+        #region event
+
+        public delegate void ItemsChangedHandler(object sender, ItemsChangedArgs e);
+
+        /// <summary>
+        /// Is raised when the persistent storage changes
+        /// </summary>
+        public static event ItemsChangedHandler? ItemsChanged;
+
+        protected static void RaiseItemsChanged(ItemsChangedArgs args)
+        {
+            ItemsChanged?.Invoke(new(), args);
+        }
+
+        #endregion
+    }
+    public class ItemsChangedArgs : EventArgs
+    {
+        public bool HasBeenAdded { get; set; } = false;
+        public bool HasBeenRemoved { get; set; } = false;
+        public bool HasBeenEdited { get; set; } = false;
     }
 }
