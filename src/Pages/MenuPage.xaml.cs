@@ -25,19 +25,6 @@ namespace SpartanShield.Pages
 
         private void ToggleLockClick(object sender, RoutedEventArgs e)
         {
-            var key = Utils.CreateKeyFromString("123", "Agentew04");
-            var iv = Utils.CreateIV();
-            CryptoItem cryptoItem = new()
-            {
-                Id = Guid.NewGuid(),
-                IsDirectory = true,
-                IsEncrypted = false,
-                IsInRemovableDrive = false,
-                Name = "Teste",
-                OwnerId = Guid.Empty,
-                Path = @"E:\teste"
-            };
-            EncryptionManager.EncryptItem(new(key,iv), cryptoItem);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace SpartanShield
             MissingInfo,
             UnknownError
         }
-        public async static Task<AuthResult> Register(string username, string password, string passwordAgain)
+        public static AuthResult Register(string username, string password, string passwordAgain)
         {
             if (!password.Equals(passwordAgain))
                 return AuthResult.PasswordNotMatch;
@@ -24,12 +24,12 @@ namespace SpartanShield
                 || string.IsNullOrWhiteSpace(passwordAgain))
                 return AuthResult.MissingInfo;
 
-            if (await FileManager.GetUserHashAsync(username) != null)
+            if (DatabaseManager.UserExists(username))
                 return AuthResult.UserAlreadyExist;
 
             var passwordHash = Utils.HashString($"{password}{username}", Utils.HashSecurity.Safer);
-
-            if (await FileManager.SetUserHashAsync(username, passwordHash))
+            DatabaseManager.SetUserHash(username, passwordHash);
+            if (DatabaseManager.GetUserHash(username) == passwordHash)
             {
                 SessionInfo.IsLoggedIn = true;
                 SessionInfo.CurrentUsername = username;
@@ -38,13 +38,13 @@ namespace SpartanShield
             else return AuthResult.UnknownError;
         }
 
-        public async static Task<AuthResult> Login(string username, string password)
+        public static AuthResult Login(string username, string password)
         {
             if (string.IsNullOrWhiteSpace(username)
                 || string.IsNullOrWhiteSpace(password))
                 return AuthResult.MissingInfo;
 
-            string? storedHash = await FileManager.GetUserHashAsync(username);
+            string? storedHash = DatabaseManager.GetUserHash(username);
 
             if (storedHash == null)
                 return AuthResult.UserNotExist;

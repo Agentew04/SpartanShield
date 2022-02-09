@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -47,7 +48,8 @@ namespace SpartanShield.Pages
                 return;
             }
 
-            var isSuccesful = await UserControl.Register(username, password, passwordAgain);
+            var isSuccesful = await Task.Run(() => 
+                UserControl.Register(username, password, passwordAgain));
 
             switch (isSuccesful)
             {

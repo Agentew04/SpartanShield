@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -35,7 +36,8 @@ namespace SpartanShield.Pages
             var username = UsernameTextBox.Text;
             var password = PasswordBox.Password;
 
-            var isSuccessful = await UserControl.Login(username, password);
+            var isSuccessful = await Task.Run(() => 
+                UserControl.Login(username, password));
 
             switch (isSuccessful)
             {

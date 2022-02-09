@@ -32,12 +32,13 @@ namespace SpartanShield
 
         private static void SyncAllUSBDrives()
         {
-            var usbsPaths = DriveInfo.GetDrives().Where(x => x.DriveType == DriveType.Removable && x.IsReady).Select(x=>x.RootDirectory.FullName);
-            var items = FileManager.GetItems();
-            List<Guid> pluggedIds = new();
-            foreach (var usbPath in usbsPaths) pluggedIds.Add(ReadSpartanFile(usbPath).Id);
-            var idsToBeRemoved = items.Where(x => x.IsInRemovableDrive && !pluggedIds.Contains(x.OwnerId)).Select(x => x.Id) ;
-            FileManager.RemoveItem(idsToBeRemoved);
+            // TODO fix all this too
+            //var usbsPaths = DriveInfo.GetDrives().Where(x => x.DriveType == DriveType.Removable && x.IsReady).Select(x=>x.RootDirectory.FullName);
+            //var items = FileManager.GetItems();
+            //List<Guid> pluggedIds = new();
+            //foreach (var usbPath in usbsPaths) pluggedIds.Add(ReadSpartanFile(usbPath).Id);
+            //var idsToBeRemoved = items.Where(x => x.IsInRemovableDrive && !pluggedIds.Contains(x.OwnerId)).Select(x => x.Id) ;
+            //FileManager.RemoveItem(idsToBeRemoved);
         }
 
         private static bool SpartanFileExists(string rootDir) => File.Exists($"{rootDir}.spartan");
@@ -97,7 +98,8 @@ namespace SpartanShield
                 writer.Write(item.Items.Count); // write list length
                 foreach (var itemInList in item.Items)
                 {
-                    CryptoItem.WriteItem(writer, itemInList);
+                    // TODO fix this
+                    //CryptoItem.WriteItem(writer, itemInList);
                 }
             }
             public static SpartanFile Read(BinaryReader reader)
@@ -108,7 +110,8 @@ namespace SpartanShield
                 List<CryptoItem> items = new();
                 for (int i = 0; i < listcount; i++)
                 {
-                    items.Add(CryptoItem.ReadItem(reader));
+                    // TODO fix this
+                    //items.Add(CryptoItem.ReadItem(reader));
                 }
                 return new()
                 {

@@ -12,15 +12,8 @@ namespace SpartanShield
     {
         public static void EncryptItem(Utils.Auth credentials, CryptoItem item)
         {
-            if (item.IsDirectory && !item.IsEncrypted)
-            {
-                EncryptFolder(credentials, item.Path);
-            }
+            
         }
-        //private void EncryptFile(Utils.Auth auth, string path, ZipFile zipfile)
-        //{
-        //    // TODO encrypt each file in folder separately
-        //}
         private static void EncryptFolder(Utils.Auth auth, string path)
         {
             // read decrypted
