@@ -228,6 +228,45 @@ public static class DatabaseManager
     #endregion
 
     #region idmapping
+    
+    /// <summary>
+    /// Adds a Id mapping to the database
+    /// </summary>
+    /// <param name="id">The id that will be mapped</param>
+    /// <param name="type">The <see cref="ObjectType"/> that the id corresponds</param>
+    public static void AddIdMapping(Guid id, ObjectType type)
+    {
+        using LiteDatabase db = new(DatabasePath);
+        var col = db.GetCollection<(Guid Id, ObjectType type)>("idmap");
+        col.EnsureIndex(x => x.Id);
+        col.Insert((id, type));
+    }
+
+    /// <summary>
+    /// Gets the <see cref="ObjectType"/> that an id corresponds to
+    /// </summary>
+    /// <param name="id">The <see cref="Guid"/> that will be searched in the database</param>
+    /// <returns>An <see cref="ObjectType"/> enum representing the type associated with the given <see cref="Guid"/></returns>
+    public static ObjectType GetIdMapping(Guid id)
+    {
+        using LiteDatabase db = new(DatabasePath);
+        var col = db.GetCollection<(Guid Id, ObjectType type)>("idmap");
+        col.EnsureIndex(x => x.Id);
+        return col.Query()
+            .Where(x => x.Id == id)
+            .Select(x => x.type)
+            .FirstOrDefault();
+    }
 
     #endregion
+}
+
+public enum ObjectType
+{
+    None,
+    User,
+    File,
+    Item,
+    Drive,
+    Computer
 }
