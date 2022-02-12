@@ -48,7 +48,7 @@ namespace SpartanShield.Pages
                 return;
             }
 
-            var isSuccesful = await Task.Run(() => 
+            var isSuccesful = await Task.Run(() =>
                 UserManager.Register(username, password, passwordAgain));
 
             switch (isSuccesful)

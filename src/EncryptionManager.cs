@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Ionic.Zip;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ionic.Zip;
 
 namespace SpartanShield
 {
@@ -12,7 +7,7 @@ namespace SpartanShield
     {
         public static void EncryptItem(Utils.Auth credentials, CryptoItem item)
         {
-            
+
         }
         private static void EncryptFolder(Utils.Auth auth, string path)
         {
@@ -26,7 +21,7 @@ namespace SpartanShield
             var cs = Utils.EncryptStream(ms, auth);
 
             // save encrypted
-            FileStream fs = new($"{path}.enc",FileMode.Create);
+            FileStream fs = new($"{path}.enc", FileMode.Create);
             cs.WriteTo(fs);
 
             // delete decrypted
@@ -39,7 +34,7 @@ namespace SpartanShield
             var actualpath = path[0..^4];
 
             // read encrypted
-            using FileStream encStream = new(path,FileMode.Open,FileAccess.Read);
+            using FileStream encStream = new(path, FileMode.Open, FileAccess.Read);
 
             // decrypt
             using var ms = Utils.DecryptStream(encStream, auth);

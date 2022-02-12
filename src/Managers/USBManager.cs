@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using Usb.Events;
-using System.Linq;
 #pragma warning disable IDE0060
 namespace SpartanShield
 {
@@ -11,7 +10,7 @@ namespace SpartanShield
 
         public static void Plugged(object? sender, UsbDevice usb)
         {
-            var path = usb.MountedDirectoryPath+"\\";
+            var path = usb.MountedDirectoryPath + "\\";
             if (path == "")
             {
                 return; // it's not a usb flash drive
@@ -21,7 +20,7 @@ namespace SpartanShield
             SpartanFile spartanFile = SpartanFileExists(path) ? ReadSpartanFile(path) : CreateSpartanFile(path);
 
             DatabaseManager.AddIdMapping(spartanFile.Id, ObjectType.Drive);
-            foreach(var item in spartanFile.Items) DatabaseManager.AddItem(item);
+            foreach (var item in spartanFile.Items) DatabaseManager.AddItem(item);
 
         }
 

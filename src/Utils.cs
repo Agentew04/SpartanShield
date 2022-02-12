@@ -1,8 +1,5 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -41,7 +38,13 @@ namespace SpartanShield
             return aes.IV;
         }
 
-        public static string HashString(string str, HashSecurity difficulty)
+        /// <summary>
+        /// Hashes a string 2^difficulty times using SHA-512
+        /// </summary>
+        /// <param name="str">The string that will be hashed</param>
+        /// <param name="difficulty">Determines the amount of times the string will be hashed</param>
+        /// <returns></returns>
+        public static string HashString(string str, HashSecurity difficulty = HashSecurity.Unsafe)
         {
             int hashnum = (int)Math.Pow(2, (double)difficulty); // the bigger this number, the harder is to bruteforce
             using SHA512 sha512 = SHA512.Create();
@@ -81,7 +84,7 @@ namespace SpartanShield
         /// <param name="bytes">The bytes that will be hashed</param>
         /// <param name="hash">The hashAlgorithm</param>
         /// <returns>The hash in a string format</returns>
-        private static string HashBytesToString(byte[] bytes, HashAlgorithm hash) => ByteToString(hash.ComputeHash(bytes));
+        public static string HashBytesToString(byte[] bytes, HashAlgorithm hash) => ByteToString(hash.ComputeHash(bytes));
 
         /// <summary>
         /// Should be used often, so pass the same hash class
@@ -89,7 +92,7 @@ namespace SpartanShield
         /// <param name="bytes">The bytes that will be hashed</param>
         /// <param name="hash">The hashAlgorithm</param>
         /// <returns>The hash</returns>
-        private static byte[] HashBytes(byte[] bytes, HashAlgorithm hash) => hash.ComputeHash(bytes);
+        public static byte[] HashBytes(byte[] bytes, HashAlgorithm hash) => hash.ComputeHash(bytes);
 
         /// <summary>
         /// Represents a Key and IV
@@ -156,6 +159,6 @@ namespace SpartanShield
 
         }
 
-        
+
     }
 }

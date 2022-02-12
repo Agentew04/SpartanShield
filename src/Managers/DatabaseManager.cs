@@ -18,7 +18,7 @@ public static class DatabaseManager
 
     public static string DatabasePath { get; set; } = $"{Environment.CurrentDirectory}/config/spartan.db";
 
-    private static LiteDatabase GetDB() => new (DatabasePath);
+    private static LiteDatabase GetDB() => new(DatabasePath);
 
     #region User
 
@@ -78,7 +78,7 @@ public static class DatabaseManager
     /// <returns></returns>
     public static bool UserExists(string username)
     {
-        using var db= GetDB();
+        using var db = GetDB();
         var col = db.GetCollection<User>("users");
         var exists = col.Exists(x => x.Username == username);
         return exists;
@@ -248,7 +248,7 @@ public static class DatabaseManager
     #endregion
 
     #region idmapping
-    
+
     /// <summary>
     /// Adds a Id mapping to the database
     /// </summary>

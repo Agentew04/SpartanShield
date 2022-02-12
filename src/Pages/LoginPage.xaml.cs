@@ -36,7 +36,7 @@ namespace SpartanShield.Pages
             var username = UsernameTextBox.Text;
             var password = PasswordBox.Password;
 
-            var isSuccessful = await Task.Run(() => 
+            var isSuccessful = await Task.Run(() =>
                 UserManager.Login(username, password));
 
             switch (isSuccessful)
