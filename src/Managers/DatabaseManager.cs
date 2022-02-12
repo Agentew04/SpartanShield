@@ -18,6 +18,8 @@ public static class DatabaseManager
 
     public static string DatabasePath { get; set; } = $"{Environment.CurrentDirectory}/config/spartan.db";
 
+    private static LiteDatabase GetDB() => new (DatabasePath);
+
     #region User
 
     /// <summary>
@@ -27,7 +29,7 @@ public static class DatabaseManager
     /// <returns></returns>
     public static string GetUserHash(string username)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var col = db.GetCollection<User>("users");
         var hash = col.Query()
             .Where(x => x.Username == username)
@@ -43,7 +45,7 @@ public static class DatabaseManager
     /// <returns></returns>
     public static string GetUserHash(Guid id)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var col = db.GetCollection<User>("users");
         var hash = col.Query()
             .Where(x => x.Id == id)
@@ -59,7 +61,7 @@ public static class DatabaseManager
     /// <param name="hash">The password hash of the user</param>
     public static void SetUserHash(string username, string hash)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var col = db.GetCollection<User>("users");
         User user = new()
         {
@@ -76,7 +78,7 @@ public static class DatabaseManager
     /// <returns></returns>
     public static bool UserExists(string username)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db= GetDB();
         var col = db.GetCollection<User>("users");
         var exists = col.Exists(x => x.Username == username);
         return exists;
@@ -89,7 +91,7 @@ public static class DatabaseManager
     /// <returns></returns>
     public static bool UserExists(Guid id)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var col = db.GetCollection<User>("users");
         var exists = col.Exists(x => x.Id == id);
         return exists;
@@ -105,9 +107,22 @@ public static class DatabaseManager
     /// <returns>The item that has been found or null if it does not exists</returns>
     public static CryptoItem? GetItem(Guid id)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var col = db.GetCollection<CryptoItem>("items");
         return col.FindById(id);
+    }
+
+    /// <summary>
+    /// Change the different fields of a item in the database, does nothing if it doesn't exists
+    /// </summary>
+    /// <param name="item">The item to be edited</param>
+    public static void EditItem(CryptoItem item)
+    {
+        bool exists = ItemExists(item.Id);
+        if (!exists) return;
+        using var db = GetDB();
+        var col = db.GetCollection<CryptoItem>("items");
+        col.Update(item);
     }
 
     /// <summary>
@@ -116,9 +131,14 @@ public static class DatabaseManager
     /// <param name="item">The item that will be added</param>
     public static void AddItem(CryptoItem item)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var col = db.GetCollection<CryptoItem>("items");
         col.Insert(item);
+        OnItemChanged(new()
+        {
+            HasBeenAdded = true,
+            Item = item
+        });
     }
 
     /// <summary>
@@ -128,7 +148,7 @@ public static class DatabaseManager
     /// <returns></returns>
     public static bool ItemExists(Guid id)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var col = db.GetCollection<CryptoItem>("items");
         return col.Exists(x => x.Id == id);
     }
@@ -140,7 +160,7 @@ public static class DatabaseManager
     [Obsolete("Should not be used as it exposes too much information")]
     public static IEnumerable<CryptoItem> GetItems()
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var col = db.GetCollection<CryptoItem>("items");
         return col.FindAll();
     }
@@ -152,7 +172,7 @@ public static class DatabaseManager
     /// <param name="id">The id that will be used to identify the file</param>
     public static void AddFile(Stream stream, Guid id)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var fs = db.GetStorage<Guid>();
         fs.Upload(id, id.ToString(), stream);
     }
@@ -165,7 +185,7 @@ public static class DatabaseManager
     public static Guid AddFile(Stream stream)
     {
         Guid guid = Guid.NewGuid();
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var fs = db.GetStorage<Guid>();
         fs.Upload(guid, guid.ToString(), stream);
         return guid;
@@ -178,7 +198,7 @@ public static class DatabaseManager
     /// <param name="id">The id that will be used to identify the file</param>
     public static void AddFile(string filepath, Guid id)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var fs = db.GetStorage<Guid>();
         FileStream file = new(filepath, FileMode.Open);
         fs.Upload(id, id.ToString(), file);
@@ -193,7 +213,7 @@ public static class DatabaseManager
     {
         Guid guid = Guid.NewGuid();
         FileStream fileStream = new(filepath, FileMode.Open);
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var fs = db.GetStorage<Guid>();
         fs.Upload(guid, guid.ToString(), fileStream);
         return guid;
@@ -206,7 +226,7 @@ public static class DatabaseManager
     /// <returns>A <see cref="MemoryStream"/> with the binary data</returns>
     public static MemoryStream GetFile(Guid id)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var fs = db.GetStorage<Guid>();
         MemoryStream ms = new();
         fs.Download(id, ms);
@@ -220,7 +240,7 @@ public static class DatabaseManager
     /// <returns>A <see cref="bool"/> representing if the file exists or not</returns>
     public static bool FileExists(Guid id)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var fs = db.GetStorage<Guid>();
         return fs.Exists(id);
     }
@@ -236,7 +256,7 @@ public static class DatabaseManager
     /// <param name="type">The <see cref="ObjectType"/> that the id corresponds</param>
     public static void AddIdMapping(Guid id, ObjectType type)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var col = db.GetCollection<(Guid Id, ObjectType type)>("idmap");
         col.EnsureIndex(x => x.Id);
         col.Insert((id, type));
@@ -249,7 +269,7 @@ public static class DatabaseManager
     /// <returns>An <see cref="ObjectType"/> enum representing the type associated with the given <see cref="Guid"/></returns>
     public static ObjectType GetIdMapping(Guid id)
     {
-        using LiteDatabase db = new(DatabasePath);
+        using var db = GetDB();
         var col = db.GetCollection<(Guid Id, ObjectType type)>("idmap");
         col.EnsureIndex(x => x.Id);
         return col.Query()
@@ -259,7 +279,25 @@ public static class DatabaseManager
     }
 
     #endregion
+
+    #region events
+
+    public delegate void ItemsChangedHandler(ItemsChangedArgs e);
+
+    /// <summary>
+    /// Is raised when the persistent storage changes
+    /// </summary>
+    public static event ItemsChangedHandler? ItemsChanged;
+
+    private static void OnItemChanged(ItemsChangedArgs args)
+    {
+        ItemsChanged?.Invoke(args);
+    }
+
+    #endregion
 }
+
+// ADDITIONAL CLASSES!!
 
 public enum ObjectType
 {
@@ -269,4 +307,21 @@ public enum ObjectType
     Item,
     Drive,
     Computer
+}
+
+public class ItemsChangedArgs : EventArgs
+{
+    public bool HasBeenAdded { get; set; } = false;
+    public bool HasBeenRemoved { get; set; } = false;
+    public bool HasBeenEdited { get; set; } = false;
+
+    /// <summary>
+    /// Its null if a item has been deleted
+    /// </summary>
+    public CryptoItem? Item { get; set; } = null;
+
+    /// <summary>
+    /// Its null if no item was removed
+    /// </summary>
+    public Guid? RemovedItemId { get; set; } = null;
 }

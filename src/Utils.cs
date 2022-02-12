@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace SpartanShield
         public static string UsersFile { get; private set; } = $"{AppFolder}/users.json";
         public static string ItemsFile { get; private set; } = $"{AppFolder}/items.json";
 
-        public static byte[] CreateKeyFromString(string input, string? salt = null)
+        public static byte[] DeriveKeyFromString(string input, string? salt = null)
         {
             //get input bytes
             byte[] inputbytes = Encoding.UTF8.GetBytes(input);
@@ -43,22 +44,58 @@ namespace SpartanShield
         public static string HashString(string str, HashSecurity difficulty)
         {
             int hashnum = (int)Math.Pow(2, (double)difficulty); // the bigger this number, the harder is to bruteforce
-            SHA512 sha512 = SHA512.Create();
+            using SHA512 sha512 = SHA512.Create();
+            byte[] bytes = Encoding.UTF8.GetBytes(str);
             for (int i = 0; i < hashnum; i++)
             {
-                str = RawHash(str, sha512);
+                str = HashBytesToString(bytes, sha512);
             }
             return str;
         }
 
-        private static string RawHash(string s, HashAlgorithm hash)
+        /// <summary>
+        /// Hashes a file based on its content using SHA-512
+        /// </summary>
+        /// <param name="filepath">The path of the file</param>
+        /// <returns>The hash in a string format</returns>
+        public static async Task<string> HashFileAsync(string filepath)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(s);
-            byte[] hashOutput = hash.ComputeHash(bytes);
-            return BitConverter.ToString(hashOutput).Replace("-", "").ToLower();
+            // TODO use its length too
+            using SHA512 sha512 = SHA512.Create();
+            FileInfo fileInfo = new(filepath);
+            FileStream fileStream = fileInfo.OpenRead();
+            byte[] result = await sha512.ComputeHashAsync(fileStream);
+            return ByteToString(result);
         }
 
+        /// <summary>
+        /// Converts a byte array to its string representation
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
+        public static string ByteToString(byte[] bytes) => BitConverter.ToString(bytes).Replace("-", "").ToLower();
 
+        /// <summary>
+        /// Should be used often, so pass the same hash class
+        /// </summary>
+        /// <param name="bytes">The bytes that will be hashed</param>
+        /// <param name="hash">The hashAlgorithm</param>
+        /// <returns>The hash in a string format</returns>
+        private static string HashBytesToString(byte[] bytes, HashAlgorithm hash) => ByteToString(hash.ComputeHash(bytes));
+
+        /// <summary>
+        /// Should be used often, so pass the same hash class
+        /// </summary>
+        /// <param name="bytes">The bytes that will be hashed</param>
+        /// <param name="hash">The hashAlgorithm</param>
+        /// <returns>The hash</returns>
+        private static byte[] HashBytes(byte[] bytes, HashAlgorithm hash) => hash.ComputeHash(bytes);
+
+        /// <summary>
+        /// Represents a Key and IV
+        /// </summary>
+        /// <param name="Key">The key in bytes[]</param>
+        /// <param name="IV"></param>
         public record Auth(byte[] Key, byte[] IV);
 
         /// <summary>
