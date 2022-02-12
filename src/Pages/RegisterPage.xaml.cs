@@ -49,26 +49,26 @@ namespace SpartanShield.Pages
             }
 
             var isSuccesful = await Task.Run(() => 
-                UserControl.Register(username, password, passwordAgain));
+                UserManager.Register(username, password, passwordAgain));
 
             switch (isSuccesful)
             {
-                case UserControl.AuthResult.Success:
+                case UserManager.AuthResult.Success:
                     main.Navigate(typeof(MenuPage));
                     break;
-                case UserControl.AuthResult.UserAlreadyExist:
+                case UserManager.AuthResult.UserAlreadyExist:
                     ErrorText.Text = "This user already exists!";
                     ErrorText.Visibility = Visibility.Visible;
                     break;
-                case UserControl.AuthResult.PasswordNotMatch:
+                case UserManager.AuthResult.PasswordNotMatch:
                     ErrorText.Text = "The two passwords doesn't match!";
                     ErrorText.Visibility = Visibility.Visible;
                     break;
-                case UserControl.AuthResult.MissingInfo:
+                case UserManager.AuthResult.MissingInfo:
                     ErrorText.Text = "Fill all fields!";
                     ErrorText.Visibility = Visibility.Visible;
                     break;
-                case UserControl.AuthResult.UnknownError:
+                case UserManager.AuthResult.UnknownError:
                     ErrorText.Text = "An unknown error has ocurred!";
                     ErrorText.Visibility = Visibility.Visible;
                     break;

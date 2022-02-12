@@ -2,7 +2,7 @@
 
 namespace SpartanShield
 {
-    public static class UserControl
+    public static class UserManager
     {
         public enum AuthResult
         {
@@ -16,6 +16,7 @@ namespace SpartanShield
         }
         public static AuthResult Register(string username, string password, string passwordAgain)
         {
+            // pre match (check for UI related things) could be moved to code-behind
             if (!password.Equals(passwordAgain))
                 return AuthResult.PasswordNotMatch;
 
@@ -24,15 +25,15 @@ namespace SpartanShield
                 || string.IsNullOrWhiteSpace(passwordAgain))
                 return AuthResult.MissingInfo;
 
-            if (DatabaseManager.UserExists(username))
-                return AuthResult.UserAlreadyExist;
+            // match for Database information
+            if (DatabaseManager.UserExists(username)) return AuthResult.UserAlreadyExist;
 
+            // hash password
             var passwordHash = Utils.HashString($"{password}{username}", Utils.HashSecurity.Safer);
+
             DatabaseManager.SetUserHash(username, passwordHash);
             if (DatabaseManager.GetUserHash(username) == passwordHash)
             {
-                SessionInfo.IsLoggedIn = true;
-                SessionInfo.CurrentUsername = username;
                 return AuthResult.Success;
             }
             else return AuthResult.UnknownError;
@@ -55,8 +56,6 @@ namespace SpartanShield
                 return AuthResult.WrongPassword;
             else
             {
-                SessionInfo.IsLoggedIn = true;
-                SessionInfo.CurrentUsername = username;
                 return AuthResult.Success;
             }
         }

@@ -19,8 +19,9 @@ namespace SpartanShield
 
             // its a compatible usb driv
             SpartanFile spartanFile = SpartanFileExists(path) ? ReadSpartanFile(path) : CreateSpartanFile(path);
-            
-            FileManager.AddItem(spartanFile.Items);
+
+            DatabaseManager.AddIdMapping(spartanFile.Id, ObjectType.Drive);
+            foreach(var item in spartanFile.Items) DatabaseManager.AddItem(item);
 
         }
 

@@ -37,26 +37,26 @@ namespace SpartanShield.Pages
             var password = PasswordBox.Password;
 
             var isSuccessful = await Task.Run(() => 
-                UserControl.Login(username, password));
+                UserManager.Login(username, password));
 
             switch (isSuccessful)
             {
-                case UserControl.AuthResult.Success:
+                case UserManager.AuthResult.Success:
                     main.Navigate(typeof(MenuPage));
                     break;
-                case UserControl.AuthResult.UserNotExist:
+                case UserManager.AuthResult.UserNotExist:
                     ErrorText.Text = "This user does not exist!";
                     ErrorText.Visibility = Visibility.Visible;
                     break;
-                case UserControl.AuthResult.WrongPassword:
+                case UserManager.AuthResult.WrongPassword:
                     ErrorText.Text = "Wrong password!";
                     ErrorText.Visibility = Visibility.Visible;
                     break;
-                case UserControl.AuthResult.MissingInfo:
+                case UserManager.AuthResult.MissingInfo:
                     ErrorText.Text = "Fill all fields!";
                     ErrorText.Visibility = Visibility.Visible;
                     break;
-                case UserControl.AuthResult.UnknownError:
+                case UserManager.AuthResult.UnknownError:
                     ErrorText.Text = "An unknown error has ocurred!";
                     ErrorText.Visibility = Visibility.Visible;
                     break;
