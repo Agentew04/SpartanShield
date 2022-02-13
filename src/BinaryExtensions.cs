@@ -46,7 +46,7 @@ namespace SpartanShield
             };
         }
 
-        public static void WriteCryptoItem(this BinaryWriter writer, CryptoItem item)
+        public static void Write(this BinaryWriter writer, CryptoItem item)
         {
             writer.Write(item.Id);
             writer.Write(item.Owner);

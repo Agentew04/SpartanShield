@@ -1,4 +1,5 @@
-﻿using SpartanShield.Pages;
+﻿using SpartanShield.Managers;
+using SpartanShield.Pages;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -15,11 +16,11 @@ namespace SpartanShield
         public string PORTABLEURL { get; } = "http://github.com/Agentew04";
 
         private readonly Dictionary<Type, Page> pageMap; //needed to not overflow memory with infinite pages
-        public IUsbEventWatcher UsbEventWatcher { get; set; } = new UsbEventWatcher();
 
         public MainWindow()
         {
             InitializeComponent();
+
 
             pageMap = new()
             {
@@ -31,8 +32,7 @@ namespace SpartanShield
 
             Navigate(typeof(LoginPage));
 
-            UsbEventWatcher.UsbDeviceAdded += USBManager.Plugged;
-            UsbEventWatcher.UsbDeviceRemoved += USBManager.Unplugged;
+            USBManager.StartManager();
         }
 
         public void Navigate(Type pageType)

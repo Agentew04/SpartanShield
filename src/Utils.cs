@@ -63,12 +63,38 @@ namespace SpartanShield
         /// <returns>The hash in a string format</returns>
         public static async Task<string> HashFileAsync(string filepath)
         {
-            // TODO use its length too
-            using SHA512 sha512 = SHA512.Create();
             FileInfo fileInfo = new(filepath);
-            FileStream fileStream = fileInfo.OpenRead();
-            byte[] result = await sha512.ComputeHashAsync(fileStream);
-            return ByteToString(result);
+            using FileStream fileStream = fileInfo.OpenRead();
+            return await HashFileAsync(fileStream);
+        }
+
+        /// <summary>
+        /// Hashes a file based on its content using SHA-512
+        /// </summary>
+        /// <param name="filepath">The path of the file</param>
+        /// <returns>The hash in a string format</returns>
+        public static async Task<string> HashFileAsync(Stream dataStream)
+        {
+            using SHA512 sha512 = SHA512.Create();
+            byte[] result = await sha512.ComputeHashAsync(dataStream);
+            return HashString(ByteToString(result) + dataStream.Length.ToString());
+        }
+
+        /// <summary>
+        /// Hashes all files inside a folder subsequently
+        /// </summary>
+        /// <param name="folderpath"></param>
+        /// <returns></returns>
+        public static async Task<string> HashFolder(string folderpath)
+        {
+            DirectoryInfo directory = new(folderpath);
+            var files = directory.EnumerateFiles("*", SearchOption.AllDirectories);
+            string hash = "";
+            foreach(var file in files)
+            {
+                hash = (await HashFileAsync(file.FullName))+ hash;
+            }
+            return hash;
         }
 
         /// <summary>
@@ -102,7 +128,7 @@ namespace SpartanShield
         public record Auth(byte[] Key, byte[] IV);
 
         /// <summary>
-        /// Encrypts a Stream using AES. Keysize is 256bit and IV is 128bit
+        /// Encrypts a Stream using AES. Key is 256 bit and IV is 128 bit
         /// </summary>
         /// <param name="inStream">The stream that will be encrypted</param>
         /// <param name="auth">The Auth object</param>
@@ -122,7 +148,7 @@ namespace SpartanShield
         }
 
         /// <summary>
-        /// Decrypts a <see cref="Stream"/> containing cyphertext. Uses AES with 2048 as Key and Block size.
+        /// Decrypts a <see cref="Stream"/> using AES. Key is 256 bit and IV is 128 bit
         /// </summary>
         /// <param name="inStream">The encrypted <see cref="Stream"/></param>
         /// <param name="auth">A object containing Key and IV</param>

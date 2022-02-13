@@ -1,17 +1,11 @@
 ﻿using LiteDB;
+using SpartanShield.DatabaseModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
-namespace SpartanShield;
-public class User
-{
-    public string Username { get; set; } = "";
-    public string PasswordHash { get; set; } = "";
-    [BsonId]
-    public Guid Id { get; set; } = Guid.NewGuid();
-    public List<Guid> Files { get; set; } = new();
-}
+namespace SpartanShield.Managers;
 
 public static class DatabaseManager
 {
@@ -97,9 +91,31 @@ public static class DatabaseManager
         return exists;
     }
 
+    /// <summary>
+    /// Deletes a user from the database based on its id
+    /// </summary>
+    /// <param name="id"></param>
+    public static void RemoveUser(Guid id)
+    {
+        using var db = GetDB();
+        var col = db.GetCollection<User>("users");
+        col.Delete(id);
+    }
+
+    /// <summary>
+    /// Deletes a user based on its username
+    /// </summary>
+    /// <param name="username">The name of the user that will be deleted</param>
+    public static void RemoveUser(string username)
+    {
+        using var db = GetDB();
+        var col = db.GetCollection<User>("users");
+        col.DeleteMany(x => x.Username == username);
+    }
+
     #endregion
 
-    #region files
+    #region items
     /// <summary>
     /// Returns a <see cref="CryptoItem"/> by its <see cref="Guid"/>
     /// </summary>
@@ -164,6 +180,33 @@ public static class DatabaseManager
         var col = db.GetCollection<CryptoItem>("items");
         return col.FindAll();
     }
+
+    /// <summary>
+    /// Removes a item from the database based on its id
+    /// </summary>
+    /// <param name="id"></param>
+    public static void RemoveItem(Guid id)
+    {
+        using var db = GetDB();
+        var col = db.GetCollection<CryptoItem>("items");
+        col.Delete(id);
+    }
+
+    /// <summary>
+    /// Removes all items containing the ids in the IEnumerable
+    /// </summary>
+    /// <param name="ids">The ids that will be removed</param>
+    /// <returns>How many items where removed</returns>
+    public static int RemoveItem(IEnumerable<Guid> ids)
+    {
+        using var db = GetDB();
+        var col = db.GetCollection<CryptoItem>("items");
+        return col.DeleteMany(x => ids.Contains(x.Id));
+    }
+
+    #endregion
+
+    #region files
 
     /// <summary>
     /// Adds a file by its Stream and a Id
@@ -245,21 +288,32 @@ public static class DatabaseManager
         return fs.Exists(id);
     }
 
+    /// <summary>
+    /// Removes a file from the database based on its id
+    /// </summary>
+    /// <param name="id"></param>
+    public static void RemoveFile(Guid id)
+    {
+        using var db = GetDB();
+        var fs = db.GetStorage<Guid>();
+        fs.Delete(id);
+    }
+
     #endregion
 
     #region idmapping
 
     /// <summary>
-    /// Adds a Id mapping to the database
+    /// Adds a Id mapping to the database. If the id already exists, nothing is changed
     /// </summary>
     /// <param name="id">The id that will be mapped</param>
     /// <param name="type">The <see cref="ObjectType"/> that the id corresponds</param>
     public static void AddIdMapping(Guid id, ObjectType type)
     {
         using var db = GetDB();
-        var col = db.GetCollection<(Guid Id, ObjectType type)>("idmap");
-        col.EnsureIndex(x => x.Id);
-        col.Insert((id, type));
+        var col = db.GetCollection<IdMap>("idmap");
+        if (!col.Exists(x => x.Id == id)) // does not use method IdMappingExists because the file is locked 
+            col.Insert(new IdMap(id, type));
     }
 
     /// <summary>
@@ -270,12 +324,24 @@ public static class DatabaseManager
     public static ObjectType GetIdMapping(Guid id)
     {
         using var db = GetDB();
-        var col = db.GetCollection<(Guid Id, ObjectType type)>("idmap");
+        var col = db.GetCollection<IdMap>("idmap");
         col.EnsureIndex(x => x.Id);
         return col.Query()
             .Where(x => x.Id == id)
-            .Select(x => x.type)
+            .Select(x => x.Type)
             .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Checks if a IdMapping already exists
+    /// </summary>
+    /// <param name="id">The id that will be searched</param>
+    /// <returns>The result of the operation</returns>
+    public static bool IdMappingExists(Guid id)
+    {
+        using var db = GetDB();
+        var col = db.GetCollection<IdMap>("idmap");
+        return col.Exists(x => x.Id == id);
     }
 
     #endregion

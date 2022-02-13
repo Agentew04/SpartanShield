@@ -1,5 +1,4 @@
-﻿
-namespace SpartanShield
+﻿namespace SpartanShield.Managers
 {
     public static class UserManager
     {

@@ -7,7 +7,10 @@ namespace SpartanShield.Pages
     /// </summary>
     public partial class FoldersPage : Page
     {
+
+#pragma warning disable IDE0052 // Remover membros particulares não lidos
         private readonly MainWindow main;
+#pragma warning restore IDE0052 // Remover membros particulares não lidos
         public FoldersPage(MainWindow main)
         {
             InitializeComponent();
