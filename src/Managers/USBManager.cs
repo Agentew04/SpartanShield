@@ -19,7 +19,10 @@ public static class USBManager
         UsbDevices.AddRange(DriveInfo.GetDrives()                                        // get all drives and adds it to the list
                             .Where(x => x.DriveType == DriveType.Removable && x.IsReady) // selects only usable usbs
                             .Select(x => new Usb(x)));                                   // converts to Usb class
+        var newItems = UsbDevices.Where(x => x.Items != null && x.Items.Count > 0)
+            .SelectMany(x => x.Items);
 
+        DatabaseManager.AddItem(newItems);
     }
 
     public static void Plugged(object? _, UsbDevice usbDevice)

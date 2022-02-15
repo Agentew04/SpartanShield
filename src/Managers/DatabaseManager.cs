@@ -158,6 +158,23 @@ public static class DatabaseManager
     }
 
     /// <summary>
+    /// Adds a new item to the files collection
+    /// </summary>
+    /// <param name="item">The item that will be added</param>
+    public static void AddItem(IEnumerable<CryptoItem> items)
+    {
+        using var db = GetDB();
+        var col = db.GetCollection<CryptoItem>("items");
+        col.InsertBulk(items);
+        OnItemChanged(new()
+        {
+            HasBeenAdded = true,
+            IsBulk = true,
+            Items = items
+        }); ;
+    }
+
+    /// <summary>
     /// Checks if a item with the specified Id already exists
     /// </summary>
     /// <param name="id">The id that will be searched</param>
@@ -317,6 +334,23 @@ public static class DatabaseManager
     }
 
     /// <summary>
+    /// Adds a Id mapping to the database. If the id already exists, nothing is changed
+    /// </summary>
+    /// <param name="id">The id that will be mapped</param>
+    /// <param name="type">The <see cref="ObjectType"/> that the id corresponds</param>
+    public static void AddIdMapping(IEnumerable<Guid> ids, IEnumerable<ObjectType> types)
+    {
+        if (ids.Count() != types.Count()) throw new ArgumentException("The amount of items on both Enumerables differ, they must be equal");
+        using var db = GetDB();
+        var col = db.GetCollection<IdMap>("idmap");
+
+        var mappings = from id in ids
+                       from type in types
+                       select new IdMap(id, type);
+        col.InsertBulk(mappings);
+    }
+
+    /// <summary>
     /// Gets the <see cref="ObjectType"/> that an id corresponds to
     /// </summary>
     /// <param name="id">The <see cref="Guid"/> that will be searched in the database</param>
@@ -381,10 +415,17 @@ public class ItemsChangedArgs : EventArgs
     public bool HasBeenRemoved { get; set; } = false;
     public bool HasBeenEdited { get; set; } = false;
 
+    public bool IsBulk { get; set; } = false;
+
     /// <summary>
     /// Its null if a item has been deleted
     /// </summary>
     public CryptoItem? Item { get; set; } = null;
+
+    /// <summary>
+    /// Its <see cref="Enumerable.Empty{CryptoItem}"/> if <see cref="IsBulk"/> is false
+    /// </summary>
+    public IEnumerable<CryptoItem> Items { get; set; } = Enumerable.Empty<CryptoItem>();
 
     /// <summary>
     /// Its null if no item was removed
