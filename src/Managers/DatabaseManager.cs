@@ -1,5 +1,6 @@
 ﻿using LiteDB;
 using SpartanShield.DatabaseModels;
+using SpartanShield.EventArguments;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,7 @@ namespace SpartanShield.Managers;
 
 public static class DatabaseManager
 {
-
+    public static string ConfigPath { get; set; } = $"{Environment.CurrentDirectory}/config";
     public static string DatabasePath { get; set; } = $"{Environment.CurrentDirectory}/config/spartan.db";
 
     private static LiteDatabase GetDB() => new(DatabasePath);
@@ -150,7 +151,7 @@ public static class DatabaseManager
         using var db = GetDB();
         var col = db.GetCollection<CryptoItem>("items");
         col.Insert(item);
-        OnItemChanged(new()
+        OnItemChange(new()
         {
             HasBeenAdded = true,
             Item = item
@@ -166,7 +167,7 @@ public static class DatabaseManager
         using var db = GetDB();
         var col = db.GetCollection<CryptoItem>("items");
         col.InsertBulk(items);
-        OnItemChanged(new()
+        OnItemChange(new()
         {
             HasBeenAdded = true,
             IsBulk = true,
@@ -226,71 +227,60 @@ public static class DatabaseManager
     #region files
 
     /// <summary>
-    /// Adds a file by its Stream and a Id
+    /// Adds a file by its Stream and a Id, if the file already exists its overwritten
     /// </summary>
     /// <param name="stream">The file stream that will be added</param>
     /// <param name="id">The id that will be used to identify the file</param>
     public static void AddFile(Stream stream, Guid id)
     {
-        using var db = GetDB();
-        var fs = db.GetStorage<Guid>();
-        fs.Upload(id, id.ToString(), stream);
+        var path = $"{ConfigPath}/{id}";
+        var alreadyExisted = File.Exists(path);
+        using FileStream fs = new(path, FileMode.Create);
+        stream.CopyTo(fs);
+        OnFileChange(new()
+        {
+            ChangeType = alreadyExisted ? FileChangeType.Modified : FileChangeType.Added,
+            Id = id,
+            Path = path
+        });
     }
 
-    /// <summary>
-    /// Adds a file stream to the database, generating a new id automagically
-    /// </summary>
-    /// <param name="stream">The data stream that will be added</param>
-    /// <returns>The id that was generated</returns>
+    /// <inheritdoc cref="AddFile(Stream, Guid)"/>
     public static Guid AddFile(Stream stream)
     {
         Guid guid = Guid.NewGuid();
-        using var db = GetDB();
-        var fs = db.GetStorage<Guid>();
-        fs.Upload(guid, guid.ToString(), stream);
+        AddFile(stream, guid);
         return guid;
     }
 
     /// <summary>
-    /// Adds a file by its filepath and <see cref="Guid"/>
+    /// Reads a file
     /// </summary>
-    /// <param name="stream">The pathh to the file that will be added</param>
-    /// <param name="id">The id that will be used to identify the file</param>
-    public static void AddFile(string filepath, Guid id)
+    /// <param name="id">The id of the file</param>
+    /// <exception cref="FileNotFoundException"></exception>
+    /// <returns>The stream containing the file data</returns>
+    public static FileStream GetFile(Guid id)
     {
-        using var db = GetDB();
-        var fs = db.GetStorage<Guid>();
-        FileStream file = new(filepath, FileMode.Open);
-        fs.Upload(id, id.ToString(), file);
+        var path = $"{ConfigPath}/{id}";
+        using FileStream fs = new(path, FileMode.Open);
+        return fs;
     }
 
     /// <summary>
-    /// Adds a file by its path to the database, generating a new id automagically
+    /// Deletes a file from the storage
     /// </summary>
-    /// <param name="stream">The path to the file</param>
-    /// <returns>The id that was generated</returns>
-    public static Guid AddFile(string filepath)
+    /// <param name="id"></param>
+    public static void RemoveFile(Guid id)
     {
-        Guid guid = Guid.NewGuid();
-        FileStream fileStream = new(filepath, FileMode.Open);
-        using var db = GetDB();
-        var fs = db.GetStorage<Guid>();
-        fs.Upload(guid, guid.ToString(), fileStream);
-        return guid;
-    }
-
-    /// <summary>
-    /// Gets a file from the database from its id
-    /// </summary>
-    /// <param name="id">The id that will be searched</param>
-    /// <returns>A <see cref="MemoryStream"/> with the binary data</returns>
-    public static MemoryStream GetFile(Guid id)
-    {
-        using var db = GetDB();
-        var fs = db.GetStorage<Guid>();
-        MemoryStream ms = new();
-        fs.Download(id, ms);
-        return ms;
+        var path = $"{ConfigPath}/{id}";
+        if (!File.Exists(path)) return;
+        File.Delete(path);
+        OnFileChange(new()
+        {
+            ChangeType = FileChangeType.Deleted,
+            Id = id,
+            Path = path
+        });
     }
 
     /// <summary>
@@ -300,20 +290,7 @@ public static class DatabaseManager
     /// <returns>A <see cref="bool"/> representing if the file exists or not</returns>
     public static bool FileExists(Guid id)
     {
-        using var db = GetDB();
-        var fs = db.GetStorage<Guid>();
-        return fs.Exists(id);
-    }
-
-    /// <summary>
-    /// Removes a file from the database based on its id
-    /// </summary>
-    /// <param name="id"></param>
-    public static void RemoveFile(Guid id)
-    {
-        using var db = GetDB();
-        var fs = db.GetStorage<Guid>();
-        fs.Delete(id);
+        return File.Exists($"{ConfigPath}/{id}");
     }
 
     #endregion
@@ -382,18 +359,20 @@ public static class DatabaseManager
 
     #region events
 
-    public delegate void ItemsChangedHandler(ItemsChangedArgs e);
+    public delegate void ItemsChangeHandler(ItemsChangedArgs e);
+    public delegate void FileChangeHandler(FileChangedArgs e);
 
     /// <summary>
     /// Is raised when the persistent storage changes
     /// </summary>
-    public static event ItemsChangedHandler? ItemsChanged;
+    public static event ItemsChangeHandler? ItemsChanged;
+    /// <summary>
+    /// Is raised when a file change is detected
+    /// </summary>
+    public static event FileChangeHandler? FileChanged;
 
-    private static void OnItemChanged(ItemsChangedArgs args)
-    {
-        ItemsChanged?.Invoke(args);
-    }
-
+    private static void OnItemChange(ItemsChangedArgs args) => ItemsChanged?.Invoke(args);
+    private static void OnFileChange(FileChangedArgs args) => FileChanged?.Invoke(args);
     #endregion
 }
 
@@ -409,26 +388,3 @@ public enum ObjectType
     Computer
 }
 
-public class ItemsChangedArgs : EventArgs
-{
-    public bool HasBeenAdded { get; set; } = false;
-    public bool HasBeenRemoved { get; set; } = false;
-    public bool HasBeenEdited { get; set; } = false;
-
-    public bool IsBulk { get; set; } = false;
-
-    /// <summary>
-    /// Its null if a item has been deleted
-    /// </summary>
-    public CryptoItem? Item { get; set; } = null;
-
-    /// <summary>
-    /// Its <see cref="Enumerable.Empty{CryptoItem}"/> if <see cref="IsBulk"/> is false
-    /// </summary>
-    public IEnumerable<CryptoItem> Items { get; set; } = Enumerable.Empty<CryptoItem>();
-
-    /// <summary>
-    /// Its null if no item was removed
-    /// </summary>
-    public Guid? RemovedItemId { get; set; } = null;
-}
