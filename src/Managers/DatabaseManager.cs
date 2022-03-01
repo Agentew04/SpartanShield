@@ -114,6 +114,20 @@ public static class DatabaseManager
         col.DeleteMany(x => x.Username == username);
     }
 
+    /// <summary>
+    /// Gets the <see cref="Guid"/> from a user based on its username.
+    /// </summary>
+    /// <param name="username">The username that will be searched</param>
+    /// <returns>The user id. If user doesn't exists, will return <see cref="Guid.Empty"/></returns>
+    public static Guid GetUserId(string username)
+    {
+        using var db = GetDB();
+        var col = db.GetCollection<User>("users");
+        return col.Query()
+            .Where(x => x.Username == username)
+            .Select(x => x.Id)
+            .FirstOrDefault();
+    }
     #endregion
 
     #region items

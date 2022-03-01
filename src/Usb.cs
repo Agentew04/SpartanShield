@@ -25,7 +25,8 @@ namespace SpartanShield
         #region properties
 
         /// <summary>
-        /// Returns the full root directory of this usb. If its invalid, returns <see cref="string.Empty"/>
+        /// Returns the full root directory of this usb. If its invalid, returns <see cref="string.Empty"/>. Path
+        /// is like "C:\"
         /// </summary>
         public string RootDirectory { get; set; }
 

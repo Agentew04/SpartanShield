@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -19,6 +20,12 @@ namespace SpartanShield
         public static string UsersFile { get; private set; } = $"{AppFolder}/users.json";
         public static string ItemsFile { get; private set; } = $"{AppFolder}/items.json";
 
+        /// <summary>
+        /// Creates a key based on one or two strings. String -> Byte[] uses UTF8
+        /// </summary>
+        /// <param name="input">The main input</param>
+        /// <param name="salt">The salt used. If <see langword="null"/>, the salt will be a empty array</param>
+        /// <returns>The Key derived</returns>
         public static byte[] DeriveKeyFromString(string input, string? salt = null)
         {
             //get input bytes
@@ -32,10 +39,26 @@ namespace SpartanShield
             return pbkdf2.GetBytes(32); //32 bytes length is 256 bits
         }
 
+        /// <summary>
+        /// Creates a random IV
+        /// </summary>
+        /// <returns>The Initialization Vector generated</returns>
         public static byte[] CreateIV()
         {
-            using Aes aes = Aes.Create();
+            using var aes = Aes.Create();
             return aes.IV;
+        }
+
+        ///<inheritdoc cref="CreateIV"/>
+        ///<param name="count">The amount of IVs to be generated</param>
+        public static IEnumerable<byte[]> CreateIV(int count)
+        {
+            using var aes = Aes.Create();
+            for (int i = 0; i < count; i++)
+            {
+                yield return aes.IV;
+                aes.GenerateIV();
+            }
         }
 
         /// <summary>

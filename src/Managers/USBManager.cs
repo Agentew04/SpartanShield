@@ -39,6 +39,12 @@ public static class USBManager
 
     }
 
+    public static bool IsPathFromUsb(string path)
+    {
+        string rootpath = Path.GetPathRoot(path) ?? ""; // is like "C:\\"
+        return UsbDevices.Any(x => x.RootDirectory == rootpath);
+    }
+
     public static void Unplugged(object? _, UsbDevice e)
     {
         // remove unplugged usbs

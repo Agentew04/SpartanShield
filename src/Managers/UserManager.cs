@@ -1,7 +1,13 @@
-﻿namespace SpartanShield.Managers
+﻿using System;
+
+namespace SpartanShield.Managers
 {
     public static class UserManager
     {
+        public static byte[] Key { get; set; } = new byte[32];
+        public static Guid UserId { get; set; } = Guid.Empty;
+        public static string Username { get; set; } = string.Empty;
+
         public enum AuthResult
         {
             Success,
@@ -32,6 +38,7 @@
             DatabaseManager.SetUserHash(username, passwordHash);
             if (DatabaseManager.GetUserHash(username) == passwordHash)
             {
+                SetSessionVariables(username, password, passwordHash);
                 return AuthResult.Success;
             }
             else return AuthResult.UnknownError;
@@ -54,8 +61,17 @@
                 return AuthResult.WrongPassword;
             else
             {
+                SetSessionVariables(username,password, passwordHash);
                 return AuthResult.Success;
             }
+        }
+
+        private static void SetSessionVariables(string username, string password, string passwordHash)
+        {
+
+            UserId = DatabaseManager.GetUserId(username);
+            Username = username;
+            Key = Utils.DeriveKeyFromString(passwordHash + password + username); // creating main key
         }
     }
 }

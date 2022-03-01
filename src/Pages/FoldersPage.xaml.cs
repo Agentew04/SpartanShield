@@ -1,4 +1,8 @@
 ﻿using System.Windows.Controls;
+using System;
+using System.IO;
+using System.Windows;
+using SpartanShield.Managers;
 
 namespace SpartanShield.Pages
 {
@@ -15,6 +19,35 @@ namespace SpartanShield.Pages
         {
             InitializeComponent();
             this.main = main;
+        }
+
+        private void AddFolderRequest(object sender, RoutedEventArgs e)
+        {
+            var path = FolderPathTextbox.Text;
+            var isFromUsb = USBManager.IsPathFromUsb(path);
+            CryptoItem item;
+            if (isFromUsb)
+            {
+                item = new()
+                {
+                    Path = path,
+                    
+                }
+            }
+            
+        }
+
+        private void RemoveFolderRequest(object sender, RoutedEventArgs e)
+        {
+            // get selected item
+            // get id from item
+            // decrypt if needed and restore folder
+        }
+
+        private void RefreshFolderRequest(object sender, RoutedEventArgs e)
+        {
+            // fetch idmappings from db
+            // parse to tree
         }
     }
 }

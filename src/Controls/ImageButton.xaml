@@ -1,0 +1,24 @@
+﻿<UserControl x:Class="SpartanShield.Controls.ImageButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:SpartanShield.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Button Style="{StaticResource TransparentStyle}"
+            HorizontalAlignment="Center" VerticalAlignment="Center" >
+        <Border Background="{StaticResource Secondary}"
+                                CornerRadius="5" Padding="2">
+            <WrapPanel >
+                <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:ImageButton}}, Path=Text}"
+                                           VerticalAlignment="Center"
+                                           Foreground="{StaticResource Background}"
+                                           Margin="2"/>
+                <Image Source="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:ImageButton}}, Path=ImageSource}"
+                                       Height="15" Margin="2"/>
+            </WrapPanel>
+        </Border>
+    </Button>
+</UserControl>
