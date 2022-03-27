@@ -1,0 +1,104 @@
+﻿<Page x:Class="SpartanShield.Views.LoginView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:SpartanShield.Views"
+      xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
+      xmlns:viewmodels="clr-namespace:SpartanShield.ViewModels" 
+      xmlns:converters="clr-namespace:SpartanShield.Converters"
+      d:DataContext="{d:DesignInstance Type=viewmodels:LoginViewModel}"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="800"
+      Title="LoginView"
+      FontFamily="Rubik">
+    <Page.Resources>
+        <Style x:Key="WhiteTitle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource MaterialDesignLightBackground}"/>
+            <Setter Property="FontFamily" Value="Rubik" />
+            <Setter Property="FontSize" Value="35" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style TargetType="materialDesign:PackIcon">
+            <Setter Property="Margin" Value="4,0,4,0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <converters:BooleanToHiddenConverter x:Key="boolToHidden"/>
+    </Page.Resources>
+    <Grid>
+        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="5*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Background="{StaticResource PrimaryHueDarkBrush}">
+            <WrapPanel Orientation="Vertical" HorizontalAlignment="Center"
+                       VerticalAlignment="Center">
+                <TextBlock Text="SpartanShield" Style="{StaticResource WhiteTitle}"
+                           HorizontalAlignment="Center" Margin="25"/>
+                <Image Source="/Assets/spartan.png"
+                   MaxWidth="200" MaxHeight="200"/>
+            </WrapPanel>
+        </Border>
+
+        <Grid Grid.Column="1" Background="{StaticResource MaterialDesignLightBackground}">
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+
+                <Label Content="{Binding ErrorMessage, Mode=OneWay}"
+                       Foreground="{StaticResource PrimaryHueDarkBrush}"
+                       HorizontalAlignment="Center"
+                       FontWeight="Bold"
+                       d:Content="Error Message"/>
+                <StackPanel Orientation="Horizontal" 
+                            HorizontalAlignment="Center"
+                            Margin="0,10">
+                    <materialDesign:PackIcon Kind="Account" VerticalAlignment="Center"/>
+                    <TextBox x:Name="NameTextBox"
+                             materialDesign:HintAssist.Hint="Username"
+                             Text="{Binding Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Width="150"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" 
+                            HorizontalAlignment="Center"
+                            Margin="0,10">
+                    <materialDesign:PackIcon Kind="Key" VerticalAlignment="Center"/>
+                    <PasswordBox x:Name="PasswordBox"
+                                 materialDesign:HintAssist.Hint="Password"
+                                 Width="150"/>
+                </StackPanel>
+                    
+
+                <Button Content="Login" HorizontalAlignment="Center" Cursor="Hand"
+                        Command="{Binding LoginCommand, Mode=OneWay}"
+                        CommandParameter="{Binding ElementName=PasswordBox}" 
+                        Margin="0,10"/>
+                <ProgressBar x:Name="progressBar"
+                             HorizontalAlignment="Stretch" IsIndeterminate="true"
+                             Margin="8" 
+                             Visibility="{Binding IsLoading, Converter={StaticResource boolToHidden}}"/>
+
+                <Button Style="{StaticResource MaterialDesignToolButton}"
+                        Padding="0" Margin="0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Don't have and account?"
+                                   Foreground="{StaticResource MaterialDesignLightForeground}"
+                                   Margin="2,0"/>
+                        <TextBlock Text="Register now!" TextDecorations="Underline"
+                                   Margin="2,0"/>
+                    </StackPanel>
+                </Button>
+                
+            </StackPanel>
+            
+            
+            
+            <!-- notice-->
+            <Label VerticalAlignment="Bottom"
+                   HorizontalAlignment="Left"
+                   Content="Alpha Version"/>
+        </Grid>
+    </Grid>
+</Page>

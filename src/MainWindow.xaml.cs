@@ -1,5 +1,6 @@
 ﻿using SpartanShield.Managers;
 using SpartanShield.Pages;
+using SpartanShield.Views;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -20,19 +21,16 @@ namespace SpartanShield
         public MainWindow()
         {
             InitializeComponent();
-
-
             pageMap = new()
             {
-                { typeof(LoginPage), new LoginPage(this) },
-                { typeof(RegisterPage), new RegisterPage(this) },
-                { typeof(MenuPage), new MenuPage(this) },
-                { typeof(FoldersPage), new FoldersPage(this) }
+                { typeof(LoginView), new LoginView(this) },
+                { typeof(MenuView), new MenuView(this)},
             };
+            Navigate(typeof(LoginView));
 
-            Navigate(typeof(LoginPage));
 
-            USBManager.StartManager();
+            // initialize services
+            //USBManager.StartManager();
         }
 
         public void Navigate(Type pageType)
@@ -42,7 +40,5 @@ namespace SpartanShield
                 contentFrame.Navigate(pageMap[pageType]);
             }
         }
-
-
     }
 }

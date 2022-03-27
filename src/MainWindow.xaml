@@ -5,7 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SpartanShield"
         mc:Ignorable="d"
-        Title="SpartanShield" Height="450" Width="800">
+        Title="SpartanShield" Height="450" Width="800"
+        
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignLightForeground}"
+        Background="{DynamicResource MaterialDesignLightBackground}"
+        TextElement.FontWeight="Medium"
+        TextElement.FontSize="14"
+        FontFamily="Rubik"
+>
     <Grid>
         <Frame x:Name="contentFrame" NavigationUIVisibility="Hidden"/>
     </Grid>
