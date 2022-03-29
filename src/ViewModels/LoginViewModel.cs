@@ -1,4 +1,5 @@
-﻿using Microsoft.Toolkit.Mvvm.Input;
+﻿using MaterialDesignThemes.Wpf;
+using Microsoft.Toolkit.Mvvm.Input;
 using SpartanShield.Managers;
 using SpartanShield.Views;
 using System;
@@ -42,16 +43,17 @@ namespace SpartanShield.ViewModels
             }
         }
 
-        private string _errorMessage = string.Empty;
-        public string ErrorMessage
+        private SnackbarMessageQueue _snackbarMessageQueue = new();
+        public SnackbarMessageQueue SnackbarMessageQueue
         {
-            get { return _errorMessage; }
+            get { return _snackbarMessageQueue; }
             set
             {
-                _errorMessage = value;
+                _snackbarMessageQueue = value;
                 OnPropertyChanged();
             }
         }
+
         public ICommand LoginCommand
         {
             get
@@ -74,25 +76,28 @@ namespace SpartanShield.ViewModels
             switch (result)
             {
                 case UserManager.AuthResult.UserNotExist:
-                    ErrorMessage = "User does not exist!";
+                    SnackbarMessageQueue.Enqueue("User does not exist!");
                     isError = true;
                     break;
                 case UserManager.AuthResult.MissingInfo:
-                    ErrorMessage = "Fill all fields!";
+                    SnackbarMessageQueue.Enqueue("Fill all fields!");
                     isError = true;
                     break;
                 case UserManager.AuthResult.WrongPassword:
-                    ErrorMessage = "Wrong password!";
+                    SnackbarMessageQueue.Enqueue("Wrong password!");
                     isError = true;
                     break;
                 case UserManager.AuthResult.UnknownError:
-                    ErrorMessage = "Unknown error!";
+                    SnackbarMessageQueue.Enqueue("Unknown error!");
                     isError = true;
                     break;
             }
 
             if (!isError)
             {
+                // initialize file manager
+                FileManager.Instance.Initialize(Username, password);
+
                 LoginView.MainWindow.Navigate(typeof(MenuView));
             }
             

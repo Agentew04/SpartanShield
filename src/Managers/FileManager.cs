@@ -50,7 +50,8 @@ namespace SpartanShield.Managers
             }
             else
             {
-                var jsonDeserialized = JsonConvert.DeserializeObject<List<string>>(folderspath);
+                var rawjson = File.ReadAllText(folderspath);
+                var jsonDeserialized = JsonConvert.DeserializeObject<List<string>>(rawjson);
                 if(jsonDeserialized is null)
                 {
                     _folders = new();
@@ -73,9 +74,11 @@ namespace SpartanShield.Managers
                 zipfile.AddDirectory(folder);
                 using MemoryStream zipStream = new();
                 zipfile.Save(zipStream);
+                zipStream.Seek(0, SeekOrigin.Begin);
 
                 // encrypt stream
                 using var encryptedStream = Utils.EncryptStream(zipStream, new(_key, _defaultIV));
+                encryptedStream.Seek(0,SeekOrigin.Begin);
 
                 // save stream
                 using var fileStream = File.OpenWrite(_storagePath + folder);
@@ -94,6 +97,7 @@ namespace SpartanShield.Managers
 
                 // decrypt zip & unzip
                 using var decryptedStream = Utils.DecryptStream(encryptedStream, new(_key, _defaultIV));
+                decryptedStream.Seek(0, SeekOrigin.Begin);
                 using ZipFile zip = ZipFile.Read(decryptedStream);
                 zip.ExtractAll(folder);
 

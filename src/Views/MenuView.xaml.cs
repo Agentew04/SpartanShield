@@ -29,7 +29,7 @@ namespace SpartanShield.Views
             DataContext = ViewModel;
         }
 
-        private MainWindow MainWindow;
+        public MainWindow MainWindow;
         public MenuViewModel ViewModel { get; set; }
     }
 }
